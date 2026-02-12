@@ -15,13 +15,14 @@ services:
       DATABASE_URL: postgresql://postgres:password@db:5432/marketplace_db?schema=public
       
       # NextAuth.js Configuration
-      # Generate a secret with `openssl rand -base64 32` for production
-      AUTH_SECRET: "your-super-secret-auth-key-change-this"
+      AUTH_SECRET: ${AUTH_SECRET}
       
       # In Docker, localhost refers to the container itself.
       # For browser access, use the exposed port.
-      NEXTAUTH_URL: http://localhost:3001
+      NEXTAUTH_URL: ${AUTH_URL:-http://localhost:3001}
       
+      CROWDFUNDING_API_URL: ${CROWDFUNDING_API_URL}
+
       # Allow NextAuth to trust the host header
       AUTH_TRUST_HOST: "true"
 
