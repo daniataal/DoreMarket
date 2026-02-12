@@ -43,6 +43,7 @@ export async function POST(
         // Let's assume Crowdfunding is running on http://localhost:3000 (default) and Marketplace on 3001.
 
         const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
+        console.log(`[Marketplace] Exporting deal ${dealId} to ${CROWDFUNDING_API}`);
 
         try {
             const exportPayload = {
@@ -65,27 +66,57 @@ export async function POST(
                 shipmentId: updatedDeal.id
             };
 
+            console.log("[Marketplace] Payload:", JSON.stringify(exportPayload, null, 2));
+
             const response = await fetch(CROWDFUNDING_API, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(exportPayload)
             });
 
+            const responseText = await response.text();
+            console.log(`[Marketplace] Response Status: ${response.status}`);
+            console.log(`[Marketplace] Response Body: ${responseText}`);
+
             if (!response.ok) {
-                console.error("Failed to export to Crowdfunding", await response.text());
-                // We might want to revert status or mark as "CLOSED_FAILED_EXPORT"
-                // For MVP, just log error.
+                console.error("Failed to export to Crowdfunding", responseText);
+                await prisma.deal.update({
+                    where: { id: dealId },
+                    data: { status: "EXPORT_FAILED" }
+                });
+                return NextResponse.json({
+                    success: false,
+                    error: "Export rejected by Crowdfunding Service",
+                    details: responseText
+                }, { status: 500 });
             } else {
-                const result = await response.json();
+                const result = JSON.parse(responseText);
                 // Maybe save the crowdfunding ID?
                 // await prisma.deal.update({ where: { id: dealId }, data: { crowdfundingId: result.data.id } });
+                return NextResponse.json({ success: true, deal: updatedDeal, crowdfundingData: result.data });
             }
 
-        } catch (err) {
-            console.error("Error calling Crowdfunding API", err);
+        } catch (err: any) {
+            console.error("Error calling Crowdfunding API:", err.message);
+            // Mark as FAILED export so we can retry or debug
+            await prisma.deal.update({
+                where: { id: dealId },
+                data: { status: "EXPORT_FAILED" }
+            });
+            return NextResponse.json({
+                success: false,
+                error: "Deal closed but failed to export to Crowdfunding. Status set to EXPORT_FAILED.",
+                details: err.message
+            }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, deal: updatedDeal });
+        // Check if export was successful (response.ok was checked above but let's be sure)
+        // If we reached here, it means we didn't throw in catch block, 
+        // BUT we might have hit the !response.ok block which logged error but continued.
+        // We need to change the logic to return error if !response.ok.
+
+        // Refactoring previous block to correctly handle control flow:
+        // (See applied changes below)
 
     } catch (error) {
         console.error("Purchase error:", error);
