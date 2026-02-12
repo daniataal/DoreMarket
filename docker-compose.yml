@@ -1,8 +1,36 @@
 version: '3.8'
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: marketplace_app
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      # Database connection string
+      # Note: 'db' is the service name defined below
+      DATABASE_URL: postgresql://postgres:password@db:5432/marketplace_db?schema=public
+      
+      # NextAuth.js Configuration
+      # Generate a secret with `openssl rand -base64 32` for production
+      AUTH_SECRET: "your-super-secret-auth-key-change-this"
+      
+      # In Docker, localhost refers to the container itself.
+      # For browser access, use the exposed port.
+      NEXTAUTH_URL: http://localhost:3001
+      
+      # Allow NextAuth to trust the host header
+      AUTH_TRUST_HOST: "true"
+
+    depends_on:
+      - db
+    
   db:
     image: postgres:15-alpine
+    container_name: marketplace_db
     restart: always
     environment:
       POSTGRES_USER: postgres

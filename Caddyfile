@@ -1,0 +1,21 @@
+{
+    # Enable debug logs for troubleshooting
+    debug
+}
+
+# Use the DOMAIN_NAME env var (e.g. your-ip or domain.com)
+https://{$DOMAIN_NAME} {
+    # internal = Self-Signed info (for Raw IP support)
+    tls internal
+
+    reverse_proxy app:3000
+}
+
+# Fallback/Redirect for standard HTTP
+:80 {
+    # Optional: Redirect to HTTPS if you want to force it
+    # redir https://{host}{uri}
+    
+    # For now, just confirm it works
+    respond "HTTP is running. Access via HTTPS at https://{$DOMAIN_NAME} (Accept Security Warning)"
+}
