@@ -29,6 +29,7 @@ model User {
   email         String    @unique
   password      String
   role          String    @default("USER") // USER, ADMIN
+  balance       Float     @default(0)
   deals         Deal[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
