@@ -32,7 +32,7 @@ export async function register(
     formData: FormData,
 ): Promise<string | undefined> {
     const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
+    const email = (formData.get("email") as string).toLowerCase();
     const password = formData.get("password") as string;
 
     if (!email || !password || password.length < 6) {
