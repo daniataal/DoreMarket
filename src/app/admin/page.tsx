@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { PlusCircle, Trash2 } from "lucide-react";
+import { Deal } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export default async function AdminDashboard() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {deals.map((deal) => (
+                        {deals.map((deal: Deal) => (
                             <tr key={deal.id} className="hover:bg-secondary/10 transition-colors">
                                 <td className="px-6 py-4 font-medium text-foreground">{deal.company}</td>
                                 <td className="px-6 py-4 text-foreground">
@@ -50,8 +51,8 @@ export default async function AdminDashboard() {
                                 <td className="px-6 py-4 text-muted-foreground">${deal.pricePerKg.toLocaleString()}</td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${deal.status === 'OPEN'
-                                            ? 'bg-emerald-500/10 text-emerald-500'
-                                            : 'bg-muted text-muted-foreground'
+                                        ? 'bg-emerald-500/10 text-emerald-500'
+                                        : 'bg-muted text-muted-foreground'
                                         }`}>
                                         {deal.status}
                                     </span>
