@@ -33,35 +33,13 @@ services:
       AUTH_TRUST_HOST: "true"
       NODE_ENV: production
     ports:
-      - "3001:3000" # Keep exposed for debugging/direct access (mapped to 3001)
-      # - "3000:3000" # Internal Caddy uses 3000
+      - "3001:3001" # Host Port : Container Port
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./prisma:/app/prisma
     # Run migrations on start (using db push for schema sync without migrations)
     command: sh -c "npx prisma db push && node server.js"
 
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: marketplace_caddy
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - DOMAIN_NAME=${DOMAIN_NAME}
-      - ACME_EMAIL=${ACME_EMAIL}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - app
-
 volumes:
   postgres_data:
-  caddy_data:
-  caddy_config:
