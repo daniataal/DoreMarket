@@ -45,4 +45,5 @@ export const authConfig = {
         }
     },
     providers: [], // Add providers with an outer function
+    secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;
