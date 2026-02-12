@@ -38,6 +38,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ./prisma:/app/prisma
     # Run migrations on start (using db push for schema sync without migrations)
     command: sh -c "npx prisma db push && node server.js"
 
