@@ -20,13 +20,15 @@ export class GoldPriceService {
 
         try {
             console.log("Fetching live gold price from API...");
-            // Fetch from gold-api.com
+
+            // Bypass Next.js cache with 'no-store' to ensure freshness
             // Endpoint: https://api.gold-api.com/price/XAU
-            // Response: { "name": "Gold", "price": 2650.50, "symbol": "XAU" ... }
-            // Price is typically in USD per Troy Ounce.
             const response = await fetch('https://api.gold-api.com/price/XAU', {
-                next: { revalidate: 10 }, // Next.js caching: 10s
-                headers: { 'Cache-Control': 'no-cache' }
+                cache: 'no-store',
+                headers: {
+                    'User-Agent': 'GoldTracker/1.0',
+                    'Accept': 'application/json'
+                }
             });
 
             if (response.ok) {
@@ -43,6 +45,12 @@ export class GoldPriceService {
                     this.lastFetchTime = Date.now();
                     return pricePerKg;
                 }
+            } else {
+                console.error(`Gold API Error: ${response.status} ${response.statusText}`);
+                try {
+                    const text = await response.text();
+                    console.error(`Gold API Body: ${text}`);
+                } catch (e) { /* ignore */ }
             }
         } catch (error) {
             console.error("Failed to fetch gold price from gold-api.com:", error);
