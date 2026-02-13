@@ -2,18 +2,68 @@ export class GoldPriceService {
     // Base price per kg in USD (approximate current market rate)
     private static BASE_PRICE_PER_KG = 75000;
 
+    // Call duration in ms
+    private static CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    private static lastFetchTime: number = 0;
+    private static cachedPrice: number = 0;
+
     /**
      * Fetches the current live gold price per kg.
-     * In a real app, this would call an external API (e.g., Metals-API, GoldAPI).
-     * For now, it returns a simulated price that fluctuates slightly.
+     * Uses GoldAPI.io if API key is present.
+     * Fallback to simulation if API fails or key is missing.
      */
     static async getLivePricePerKg(): Promise<number> {
+        // Return cached price if valid
+        if (Date.now() - this.lastFetchTime < this.CACHE_DURATION && this.cachedPrice > 0) {
+            return this.cachedPrice;
+        }
+
+        const apiKey = process.env.GOLD_API_KEY;
+
+        // Try fetching from API if key exists (and is not placeholder)
+        if (apiKey && apiKey !== 'REPLACE_WITH_YOUR_KEY') {
+            try {
+                const response = await fetch('https://www.goldapi.io/api/XAU/USD', {
+                    headers: {
+                        'x-access-token': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    next: { revalidate: 300 } // Next.js caching
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.price) {
+                        // API returns price per Ounce. 1 Ounce = 0.0311035 kg => 1kg = 32.1507 Ounces
+                        // Price per Kg = Price per Ounce * 32.1507
+                        const pricePerOunce = data.price;
+                        const pricePerKg = pricePerOunce * 32.1507;
+
+                        this.cachedPrice = pricePerKg;
+                        this.lastFetchTime = Date.now();
+                        return pricePerKg;
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch gold price:", error);
+            }
+        }
+
+        // Fallback: Simulation
+        console.warn("Using simulated gold price (Missing API Key or Fetch Failed)");
+
         // Simulate API latency
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Fluctuate price by +/- 0.5%
         const randomFactor = 1 + (Math.random() * 0.01 - 0.005);
-        return this.BASE_PRICE_PER_KG * randomFactor;
+        const simulatedPrice = this.BASE_PRICE_PER_KG * randomFactor;
+
+        // Update cache for simulation too to avoid jitter
+        this.cachedPrice = simulatedPrice;
+        this.lastFetchTime = Date.now();
+
+        return simulatedPrice;
     }
 
     /**
