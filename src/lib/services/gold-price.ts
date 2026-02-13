@@ -9,8 +9,8 @@ export class GoldPriceService {
 
     /**
      * Fetches the current live gold price per kg.
-     * Uses GoldAPI.io if API key is present.
-     * Fallback to simulation if API fails or key is missing.
+     * Uses api.gold-api.com (Free, no key required).
+     * Fallback to simulation if API fails.
      */
     static async getLivePricePerKg(): Promise<number> {
         // Return cached price if valid
@@ -18,39 +18,36 @@ export class GoldPriceService {
             return this.cachedPrice;
         }
 
-        const apiKey = process.env.GOLD_API_KEY;
+        try {
+            // Fetch from gold-api.com
+            // Endpoint: https://api.gold-api.com/price/XAU
+            // Response: { "name": "Gold", "price": 2650.50, "symbol": "XAU" ... }
+            // Price is typically in USD per Troy Ounce.
+            const response = await fetch('https://api.gold-api.com/price/XAU', {
+                next: { revalidate: 300 } // Next.js caching
+            });
 
-        // Try fetching from API if key exists (and is not placeholder)
-        if (apiKey && apiKey !== 'REPLACE_WITH_YOUR_KEY') {
-            try {
-                const response = await fetch('https://www.goldapi.io/api/XAU/USD', {
-                    headers: {
-                        'x-access-token': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    next: { revalidate: 300 } // Next.js caching
-                });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.price) {
+                    const pricePerOunce = data.price;
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.price) {
-                        // API returns price per Ounce. 1 Ounce = 0.0311035 kg => 1kg = 32.1507 Ounces
-                        // Price per Kg = Price per Ounce * 32.1507
-                        const pricePerOunce = data.price;
-                        const pricePerKg = pricePerOunce * 32.1507;
+                    // Conversion: 1 Troy Ounce = 0.0311034768 kg
+                    // Price/Kg = Price/Oz * (1 / 0.0311034768)
+                    // Or simply: Price/Oz * 32.1507466
+                    const pricePerKg = pricePerOunce * 32.1507466;
 
-                        this.cachedPrice = pricePerKg;
-                        this.lastFetchTime = Date.now();
-                        return pricePerKg;
-                    }
+                    this.cachedPrice = pricePerKg;
+                    this.lastFetchTime = Date.now();
+                    return pricePerKg;
                 }
-            } catch (error) {
-                console.error("Failed to fetch gold price:", error);
             }
+        } catch (error) {
+            console.error("Failed to fetch gold price from gold-api.com:", error);
         }
 
         // Fallback: Simulation
-        console.warn("Using simulated gold price (Missing API Key or Fetch Failed)");
+        console.warn("Using simulated gold price (API Fetch Failed)");
 
         // Simulate API latency
         await new Promise(resolve => setTimeout(resolve, 500));
