@@ -134,6 +134,7 @@ export async function createDeal(
                 company,
                 commodity,
                 quantity,
+                availableQuantity: quantity,
                 pricePerKg,
                 discount,
                 status: "OPEN",
