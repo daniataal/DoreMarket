@@ -1,6 +1,8 @@
+import axios from 'axios';
+
 export class GoldPriceService {
-    // Base price per kg in USD (approximate current market rate)
-    private static BASE_PRICE_PER_KG = 75000;
+    // Base price per kg in USD (~160k for 2026 market)
+    private static BASE_PRICE_PER_KG = 160000;
 
     // Call duration in ms
     private static CACHE_DURATION = 10 * 1000; // 10 seconds
@@ -19,48 +21,49 @@ export class GoldPriceService {
         }
 
         try {
-            console.log("Fetching live gold price from API...");
+            console.log("Fetching live gold price from API via Axios...");
 
-            // Bypass Next.js cache with 'no-store' to ensure freshness
-            // Endpoint: https://api.gold-api.com/price/XAU
-            const response = await fetch('https://api.gold-api.com/price/XAU', {
-                cache: 'no-store',
+            // Use axios to bypass Next.js native fetch caching quirks
+            const response = await axios.get('https://api.gold-api.com/price/XAU', {
                 headers: {
-                    'User-Agent': 'GoldTracker/1.0',
-                    'Accept': 'application/json'
-                }
+                    'User-Agent': 'Mozilla/5.0 (compatible; GoldTracker/1.0)',
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                },
+                timeout: 5000 // 5s timeout
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (response.status === 200 && response.data) {
+                const data = response.data;
                 if (data.price) {
-                    const pricePerOunce = data.price;
+                    const pricePerOunce = Number(data.price);
 
                     // Conversion: 1 Troy Ounce = 0.0311034768 kg
-                    // Price/Kg = Price/Oz * (1 / 0.0311034768)
-                    // Or simply: Price/Oz * 32.1507466
+                    // Price/Kg = Price/Oz * 32.1507466
                     const pricePerKg = pricePerOunce * 32.1507466;
 
                     this.cachedPrice = pricePerKg;
                     this.lastFetchTime = Date.now();
                     return pricePerKg;
                 }
-            } else {
-                console.error(`Gold API Error: ${response.status} ${response.statusText}`);
-                try {
-                    const text = await response.text();
-                    console.error(`Gold API Body: ${text}`);
-                } catch (e) { /* ignore */ }
             }
         } catch (error) {
-            console.error("Failed to fetch gold price from gold-api.com:", error);
+            if (axios.isAxiosError(error)) {
+                console.error(`Gold API Error: ${error.message}`, error.response?.status, error.response?.data);
+            } else {
+                console.error("Failed to fetch gold price from gold-api.com:", error);
+            }
         }
 
         // Fallback: Simulation
         console.warn("Using simulated gold price (API Fetch Failed)");
 
-        // Simulate API latency
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Simulate API latency slightly
+        if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
 
         // Fluctuate price by +/- 0.5%
         const randomFactor = 1 + (Math.random() * 0.01 - 0.005);
@@ -82,8 +85,6 @@ export class GoldPriceService {
         const pureValue = marketPrice * purity;
 
         // 2. Apply discount
-        // Discount is usually applied to the LBMA price, so we subtract it.
-        // Formula: (Market Price * Purity) * (1 - Discount/100)
         const discountedPrice = pureValue * (1 - discountPercentage / 100);
 
         return Number(discountedPrice.toFixed(2));
