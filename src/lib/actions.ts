@@ -10,7 +10,12 @@ import { GoldPriceService } from "./services/gold-price";
 
 // Helper for UI to get current price
 export async function getLiveGoldPrice() {
-    return await GoldPriceService.getLivePricePerKg();
+    try {
+        return await GoldPriceService.getLivePricePerKg();
+    } catch (error) {
+        console.error("Failed to fetch live gold price:", error);
+        return 0; // Return 0 to indicate failure gracefully
+    }
 }
 
 export async function authenticate(

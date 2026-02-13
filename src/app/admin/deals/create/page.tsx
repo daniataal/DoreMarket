@@ -18,6 +18,7 @@ export default function CreateDealPage() {
     // Market Data
     const [marketPrice, setMarketPrice] = useState(0);
     const [isLoadingPrice, setIsLoadingPrice] = useState(false);
+    const [priceError, setPriceError] = useState(false);
 
     // Derived Values
     const calculatedPrice = (marketPrice * purity) * (1 - discount / 100);
@@ -44,11 +45,17 @@ export default function CreateDealPage() {
 
     const refreshPrice = async () => {
         setIsLoadingPrice(true);
+        setPriceError(false);
         try {
             const price = await getLiveGoldPrice();
-            setMarketPrice(price);
+            if (price === 0) {
+                setPriceError(true);
+            } else {
+                setMarketPrice(price);
+            }
         } catch (error) {
             console.error("Failed to fetch price", error);
+            setPriceError(true);
         } finally {
             setIsLoadingPrice(false);
         }
@@ -71,8 +78,16 @@ export default function CreateDealPage() {
                     <div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">LBMA Gold Price</div>
                         <div className="text-2xl font-mono font-bold text-foreground">
-                            {marketPrice > 0 ? `$${marketPrice.toLocaleString()}` : 'Loading...'}
-                            <span className="text-sm text-muted-foreground font-normal ml-1">/kg</span>
+                            {isLoadingPrice ? (
+                                'Loading...'
+                            ) : priceError ? (
+                                <span className="text-destructive text-lg">API Error</span>
+                            ) : marketPrice > 0 ? (
+                                `$${marketPrice.toLocaleString()}`
+                            ) : (
+                                'Waiting...'
+                            )}
+                            {marketPrice > 0 && !priceError && <span className="text-sm text-muted-foreground font-normal ml-1">/kg</span>}
                         </div>
                     </div>
                     <button
