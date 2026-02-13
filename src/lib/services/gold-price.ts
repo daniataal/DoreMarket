@@ -6,10 +6,13 @@ export class GoldPriceService {
     private static lastFetchTime: number = 0;
     private static cachedPrice: number = 0;
 
+    // Fallback price in case API is unreachable (based on recent gold prices ~$5,000/oz)
+    private static FALLBACK_PRICE_PER_KG = 160000; // Approximate fallback
+
     /**
      * Fetches the current live gold price per kg.
      * Uses api.gold-api.com (Free, no key required).
-     * THROWS ERROR if API fails (No fallback).
+     * Falls back to static price if API is unreachable.
      */
     static async getLivePricePerKg(): Promise<number> {
         // Return cached price if valid
@@ -52,13 +55,22 @@ export class GoldPriceService {
             throw new Error("Invalid API response format");
 
         } catch (error) {
+            // Use fallback price when API is unreachable
+            console.warn("⚠️ Gold API unreachable, using fallback price");
             if (axios.isAxiosError(error)) {
-                console.error(`Gold API Error: ${error.message}`, error.response?.status, error.response?.data);
-                throw new Error(`Gold API Error: ${error.message}`);
+                console.error(`Gold API Error: ${error.message}`, error.code);
             } else {
-                console.error("Failed to fetch gold price from gold-api.com:", error);
-                throw error;
+                console.error("Failed to fetch gold price:", error);
             }
+
+            // Return cached price if available, otherwise use fallback
+            if (this.cachedPrice > 0) {
+                console.log("Returning last cached price:", this.cachedPrice);
+                return this.cachedPrice;
+            }
+
+            console.log("Returning fallback price:", this.FALLBACK_PRICE_PER_KG);
+            return this.FALLBACK_PRICE_PER_KG;
         }
     }
 
