@@ -22,9 +22,11 @@ export default function CreateDealPage() {
     // Derived Values
     const calculatedPrice = (marketPrice * purity) * (1 - discount / 100);
 
-    // Fetch initial market price
+    // Fetch initial market price and poll every 10 seconds
     useEffect(() => {
         refreshPrice();
+        const interval = setInterval(refreshPrice, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     // Update purity when type changes
@@ -190,8 +192,8 @@ export default function CreateDealPage() {
                                                 type="button"
                                                 onClick={() => setPricingModel('FIXED')}
                                                 className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-all ${pricingModel === 'FIXED'
-                                                        ? 'bg-background shadow-sm text-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground'
+                                                    ? 'bg-background shadow-sm text-foreground'
+                                                    : 'text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
                                                 Fixed Price
@@ -200,8 +202,8 @@ export default function CreateDealPage() {
                                                 type="button"
                                                 onClick={() => setPricingModel('DYNAMIC')}
                                                 className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-all ${pricingModel === 'DYNAMIC'
-                                                        ? 'bg-background shadow-sm text-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground'
+                                                    ? 'bg-background shadow-sm text-foreground'
+                                                    : 'text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
                                                 Dynamic (LBMA)

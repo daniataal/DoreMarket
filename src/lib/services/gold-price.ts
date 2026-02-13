@@ -3,7 +3,7 @@ export class GoldPriceService {
     private static BASE_PRICE_PER_KG = 75000;
 
     // Call duration in ms
-    private static CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    private static CACHE_DURATION = 10 * 1000; // 10 seconds
     private static lastFetchTime: number = 0;
     private static cachedPrice: number = 0;
 
@@ -19,12 +19,14 @@ export class GoldPriceService {
         }
 
         try {
+            console.log("Fetching live gold price from API...");
             // Fetch from gold-api.com
             // Endpoint: https://api.gold-api.com/price/XAU
             // Response: { "name": "Gold", "price": 2650.50, "symbol": "XAU" ... }
             // Price is typically in USD per Troy Ounce.
             const response = await fetch('https://api.gold-api.com/price/XAU', {
-                next: { revalidate: 300 } // Next.js caching
+                next: { revalidate: 10 }, // Next.js caching: 10s
+                headers: { 'Cache-Control': 'no-cache' }
             });
 
             if (response.ok) {
