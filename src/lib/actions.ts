@@ -3,6 +3,11 @@
 import { signIn, auth } from '@/auth';
 import { AuthError } from 'next-auth';
 
+// Helper for UI to get current price
+export async function getLiveGoldPrice() {
+    return await GoldPriceService.getLivePricePerKg();
+}
+
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData,
@@ -108,6 +113,8 @@ export async function updateProfile(
     }
 }
 
+import { GoldPriceService } from "./services/gold-price";
+
 export async function createDeal(
     prevState: string | undefined,
     formData: FormData,
@@ -119,24 +126,57 @@ export async function createDeal(
 
     const company = formData.get("company") as string;
     const commodity = formData.get("commodity") as string;
+    const type = formData.get("type") as string || "BULLION";
+    const pricingModel = formData.get("pricingModel") as string || "FIXED";
     const quantity = parseFloat(formData.get("quantity") as string);
-    const pricePerKg = parseFloat(formData.get("pricePerKg") as string);
     const discount = parseFloat(formData.get("discount") as string);
 
-    if (!company || !commodity || isNaN(quantity) || isNaN(pricePerKg) || isNaN(discount)) {
+    // Check if purity is manually provided, otherwise derive from type
+    let purity = 0.9999;
+    const purityInput = formData.get("purity");
+    if (purityInput) {
+        purity = parseFloat(purityInput as string);
+    } else {
+        purity = GoldPriceService.getPurity(type);
+    }
+
+    if (!company || !commodity || isNaN(quantity) || isNaN(discount)) {
         return "Invalid input data";
     }
 
     try {
+        // Fetch current market price for reference
+        const currentMarketPrice = await GoldPriceService.getLivePricePerKg();
+
+        let initialPricePerKg = 0;
+
+        if (pricingModel === 'FIXED') {
+            // For fixed pricing, we calculate it once and store it
+            // Or the user might assume "Price per Kg" input is manual. 
+            // BUT requirements say "calculate the price per kg...". 
+            // So we will calculate it based on current market + discount.
+            initialPricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+        } else {
+            // For dynamic, we store the current price as a baseline/reference
+            // But the UI will recalculate it. Ideally dealing with "pricePerKg" in the DB.
+            // We'll store the current calculated price so sorting/filtering works, 
+            // but UI will override it.
+            initialPricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+        }
+
         await prisma.deal.create({
             data: {
-                externalId: `MANUAL-${Date.now()}`, // Generate a unique ID for manual deals
+                externalId: `MANUAL-${Date.now()}`,
                 company,
                 commodity,
+                type,
+                purity,
+                pricingModel,
                 quantity,
                 availableQuantity: quantity,
-                pricePerKg,
                 discount,
+                marketPrice: currentMarketPrice,
+                pricePerKg: initialPricePerKg, // This is the starting price
                 status: "OPEN",
             },
         });

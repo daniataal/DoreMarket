@@ -5,15 +5,30 @@ import Navbar from "@/components/Navbar";
 import { getWalletData } from "@/actions/wallet";
 import { WalletCard } from "@/components/WalletCard";
 import { RefreshCcw } from "lucide-react";
+import { GoldPriceService } from "@/lib/services/gold-price";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
     const session = await auth();
     const walletData = await getWalletData();
-    const deals = await prisma.deal.findMany({
+    const dealsData = await prisma.deal.findMany({
         orderBy: { createdAt: 'desc' },
-        where: { status: 'OPEN' } // Only show open deals
+        where: { status: 'OPEN' }
+    });
+
+    // Recalculate prices for Dynamic deals
+    const livePrice = await GoldPriceService.getLivePricePerKg();
+
+    const deals = dealsData.map(deal => {
+        if (deal.pricingModel === 'DYNAMIC') {
+            return {
+                ...deal,
+                pricePerKg: GoldPriceService.calculateDealPrice(livePrice, deal.purity, deal.discount),
+                marketPrice: livePrice // Update ref for UI
+            };
+        }
+        return deal;
     });
 
     return (

@@ -19,6 +19,10 @@ model Deal {
   status            String      @default("OPEN") // OPEN, CLOSED, EXPORTED
   deliveryLocation  String      @default("Dubai")
   incoterms         String      @default("CIF") // CIF, FOB, EXW, etc.
+  type              String      @default("BULLION") // BULLION, DORE
+  purity            Float       @default(0.9999) // 0.9999 for Bullion, 0.916 for 22k, etc.
+  pricingModel      String      @default("FIXED") // FIXED, DYNAMIC
+  marketPrice       Float       @default(0) // LBMA price at creation (for reference or fixed deals)
   crowdfundingId    String?
   buyerId           String?
   buyer             User?       @relation("DealBuyer", fields: [buyerId], references: [id])

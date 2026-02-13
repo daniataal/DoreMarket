@@ -9,6 +9,9 @@ interface PurchaseModalProps {
         id: string;
         company: string;
         commodity: string;
+        type?: string;
+        purity?: number;
+        pricingModel?: string;
         availableQuantity: number;
         pricePerKg: number;
         discount: number;
@@ -197,22 +200,45 @@ export function PurchaseModal({ isOpen, onClose, deal, userBalance, onPurchase }
 
                     {/* Price Summary */}
                     <div className="bg-secondary/30 rounded-xl p-5 border border-border space-y-3">
-                        <div className="flex items-center gap-2 text-foreground font-medium mb-3">
-                            <DollarSign className="w-4 h-4" />
-                            Price Summary
+                        <div className="flex items-center justify-between text-foreground font-medium mb-3">
+                            <div className="flex items-center gap-2">
+                                <DollarSign className="w-4 h-4" />
+                                Price Summary
+                            </div>
+                            {deal.pricingModel === 'DYNAMIC' && (
+                                <span className="text-[10px] font-bold bg-blue-500/20 text-blue-500 px-2 py-0.5 rounded border border-blue-500/30 animate-pulse">
+                                    LIVE LBMA
+                                </span>
+                            )}
                         </div>
                         <div className="space-y-2 text-sm">
+                            {deal.pricingModel === 'DYNAMIC' && (
+                                <>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Market Price (LBMA)</span>
+                                        <span className="font-mono text-foreground">${(deal.pricePerKg / (1 - deal.discount / 100) / (deal.purity || 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}/kg</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Purity ({deal.type || 'Bullion'})</span>
+                                        <span className="font-mono text-foreground">{deal.purity ? (deal.purity * 100).toFixed(2) : '99.99'}%</span>
+                                    </div>
+                                    <div className="h-px bg-border/50 my-1"></div>
+                                </>
+                            )}
+
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Unit Price</span>
-                                <span className="font-mono text-foreground">${deal.pricePerKg.toLocaleString()}/kg</span>
+                                <span className="text-muted-foreground">Base Price (Purity Adj.)</span>
+                                <span className="font-mono text-foreground">
+                                    ${(deal.pricePerKg / (1 - deal.discount / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}/kg
+                                </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Discount</span>
                                 <span className="font-mono text-accent">-{deal.discount}%</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Final Unit Price</span>
-                                <span className="font-mono text-foreground">${finalPrice.toLocaleString()}/kg</span>
+                            <div className="flex justify-between font-medium">
+                                <span className="text-foreground">Final Unit Price</span>
+                                <span className="font-mono text-foreground">${deal.pricePerKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}/kg</span>
                             </div>
                             <div className="h-px bg-border my-2"></div>
                             <div className="flex justify-between text-base">
@@ -222,7 +248,7 @@ export function PurchaseModal({ isOpen, onClose, deal, userBalance, onPurchase }
                             <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                                 <span className="text-foreground">Total Cost</span>
                                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-mono">
-                                    ${totalCost.toLocaleString()}
+                                    ${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                 </span>
                             </div>
                         </div>
