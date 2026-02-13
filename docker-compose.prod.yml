@@ -37,6 +37,7 @@ services:
     # Add static host entry to bypass broken Docker DNS on Oracle Cloud
     extra_hosts:
       - "api.gold-api.com:137.184.95.73"  # Gold API IP address
+      - "postgres:172.19.0.2"  # Postgres container IP
     environment:
       DATABASE_URL: postgresql://postgres:marketplace_password@postgres:5432/marketplace_db?schema=public
       # Secrets should be passed via .env file on the server
