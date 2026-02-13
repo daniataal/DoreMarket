@@ -9,6 +9,11 @@ services:
     restart: always
     ports:
       - "3001:3000"
+    # Add DNS servers to fix external API resolution
+    dns:
+      - 8.8.8.8      # Google DNS
+      - 8.8.4.4      # Google DNS secondary
+      - 1.1.1.1      # Cloudflare DNS
     environment:
       # Database connection string
       # Note: 'db' is the service name defined below

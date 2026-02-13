@@ -24,6 +24,11 @@ services:
     image: ${DOCKER_IMAGE_NAME:-myuser/marketplace-platform}:latest
     container_name: marketplace_app
     restart: always
+    # Add DNS servers to fix external API resolution
+    dns:
+      - 8.8.8.8      # Google DNS
+      - 8.8.4.4      # Google DNS secondary
+      - 1.1.1.1      # Cloudflare DNS
     environment:
       DATABASE_URL: postgresql://postgres:marketplace_password@postgres:5432/marketplace_db?schema=public
       # Secrets should be passed via .env file on the server
