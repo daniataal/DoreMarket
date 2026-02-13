@@ -70,6 +70,15 @@ export default function Navbar({ user }: { user: any }) {
                                         Settings
                                     </Link>
 
+                                    <Link
+                                        href="/dashboard/kyc"
+                                        className="flex items-center gap-3 px-4 py-2 text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
+                                        onClick={() => setIsProfileOpen(false)}
+                                    >
+                                        <ShieldCheck className="w-4 h-4" />
+                                        KYC Verification
+                                    </Link>
+
                                     {user?.role === 'ADMIN' && (
                                         <Link
                                             href="/admin"

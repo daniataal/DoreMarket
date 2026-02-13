@@ -75,11 +75,19 @@ export default async function OrdersPage() {
                                             ${(deal.quantity * deal.pricePerKg * (1 - deal.discount / 100)).toLocaleString()}
                                         </p>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-1">Status</p>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                            Purchased
-                                        </span>
+                                    <div className="flex flex-col gap-2">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground mb-1">Status</p>
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                Purchased
+                                            </span>
+                                        </div>
+                                        <a
+                                            href={`/dashboard/deals/${deal.id}/agreement`}
+                                            className="text-xs text-center border border-primary text-primary hover:bg-primary/10 px-3 py-1.5 rounded-md transition-colors"
+                                        >
+                                            View Agreement
+                                        </a>
                                     </div>
                                 </div>
                             </div>
