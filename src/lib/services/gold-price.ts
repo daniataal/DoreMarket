@@ -1,9 +1,6 @@
 import axios from 'axios';
 
 export class GoldPriceService {
-    // Base price per kg in USD (~160k for 2026 market)
-    private static BASE_PRICE_PER_KG = 160000;
-
     // Call duration in ms
     private static CACHE_DURATION = 10 * 1000; // 10 seconds
     private static lastFetchTime: number = 0;
@@ -12,11 +9,12 @@ export class GoldPriceService {
     /**
      * Fetches the current live gold price per kg.
      * Uses api.gold-api.com (Free, no key required).
-     * Fallback to simulation if API fails.
+     * THROWS ERROR if API fails (No fallback).
      */
     static async getLivePricePerKg(): Promise<number> {
         // Return cached price if valid
         if (Date.now() - this.lastFetchTime < this.CACHE_DURATION && this.cachedPrice > 0) {
+            console.log("Using cached price:", this.cachedPrice);
             return this.cachedPrice;
         }
 
@@ -44,36 +42,24 @@ export class GoldPriceService {
                     // Price/Kg = Price/Oz * 32.1507466
                     const pricePerKg = pricePerOunce * 32.1507466;
 
+                    console.log(`API SUCCESS: $${pricePerOunce}/oz -> $${pricePerKg.toFixed(2)}/kg`);
+
                     this.cachedPrice = pricePerKg;
                     this.lastFetchTime = Date.now();
                     return pricePerKg;
                 }
             }
+            throw new Error("Invalid API response format");
+
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error(`Gold API Error: ${error.message}`, error.response?.status, error.response?.data);
+                throw new Error(`Gold API Error: ${error.message}`);
             } else {
                 console.error("Failed to fetch gold price from gold-api.com:", error);
+                throw error;
             }
         }
-
-        // Fallback: Simulation
-        console.warn("Using simulated gold price (API Fetch Failed)");
-
-        // Simulate API latency slightly
-        if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        // Fluctuate price by +/- 0.5%
-        const randomFactor = 1 + (Math.random() * 0.01 - 0.005);
-        const simulatedPrice = this.BASE_PRICE_PER_KG * randomFactor;
-
-        // Update cache for simulation too to avoid jitter
-        this.cachedPrice = simulatedPrice;
-        this.lastFetchTime = Date.now();
-
-        return simulatedPrice;
     }
 
     /**
