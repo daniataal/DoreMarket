@@ -99,46 +99,54 @@ export async function POST(
             return { purchase, updatedDeal, soldOut: updatedDeal.availableQuantity <= 0 };
         });
 
-        // 6. Export to Crowdfunding ONLY if deal is fully closed
+        // 6. Export THIS PURCHASE to Crowdfunding immediately
+        // Each purchase becomes its own crowdfunding opportunity
         let exportSuccess = false;
-        if (result.soldOut) {
-            const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
-            console.log(`[Marketplace] Deal ${dealId} sold out. Exporting to ${CROWDFUNDING_API}`);
+        const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
 
-            try {
-                const exportPayload = {
-                    type: "Metals",
-                    name: `${deal.company} - ${deal.commodity}`,
-                    icon: "gold-bar",
-                    risk: "Low",
-                    targetApy: 12.5,
-                    duration: 12,
-                    minInvestment: 500,
-                    amountRequired: deal.quantity * finalPrice,
-                    description: `Secured ${deal.commodity} deal from ${deal.company}. Total quantity: ${deal.quantity}kg.`,
-                    origin: "Africa",
-                    destination: deliveryLocation || deal.deliveryLocation,
-                    transportMethod: "Air Freight",
-                    metalForm: "Bar",
-                    purityPercent: 99.9,
-                    shipmentId: deal.id
-                };
+        try {
+            console.log(`[Marketplace] Exporting purchase ${result.purchase.id} (${quantity}kg) to Crowdfunding`);
 
-                const response = await fetch(CROWDFUNDING_API, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(exportPayload)
-                });
+            const exportPayload = {
+                type: "Metals",
+                name: `${deal.company} - ${deal.commodity} (${quantity}kg)`,
+                icon: "gold-bar",
+                risk: "Low",
+                targetApy: 12.5,
+                duration: 12,
+                minInvestment: 500,
+                amountRequired: totalCost, // Use purchase total, not full deal total
+                description: `Secured ${deal.commodity} purchase from ${deal.company}. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || deal.deliveryLocation}.`,
+                origin: "Africa",
+                destination: deliveryLocation || deal.deliveryLocation,
+                transportMethod: "Air Freight",
+                metalForm: "Bar",
+                purityPercent: 99.9,
+                shipmentId: result.purchase.id // Reference the purchase, not the deal
+            };
 
-                if (response.ok) {
-                    exportSuccess = true;
-                    console.log(`[Marketplace] Successfully exported deal ${dealId} to Crowdfunding`);
-                } else {
-                    console.error(`[Marketplace] Crowdfunding export failed:`, await response.text());
-                }
-            } catch (err: any) {
-                console.error(`[Marketplace] Crowdfunding export error:`, err.message);
+            const response = await fetch(CROWDFUNDING_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(exportPayload)
+            });
+
+            if (response.ok) {
+                exportSuccess = true;
+                const crowdfundingData = await response.json();
+                console.log(`[Marketplace] Successfully exported purchase ${result.purchase.id} to Crowdfunding. Campaign ID: ${crowdfundingData?.data?.id || 'unknown'}`);
+
+                // Optionally: Update purchase record with crowdfunding ID
+                // await prisma.purchase.update({
+                //     where: { id: result.purchase.id },
+                //     data: { crowdfundingId: crowdfundingData.data.id }
+                // });
+            } else {
+                const errorText = await response.text();
+                console.error(`[Marketplace] Crowdfunding export failed:`, errorText);
             }
+        } catch (err: any) {
+            console.error(`[Marketplace] Crowdfunding export error:`, err.message);
         }
 
         return NextResponse.json({
@@ -146,7 +154,10 @@ export async function POST(
             purchase: result.purchase,
             availableQuantity: result.updatedDeal.availableQuantity,
             soldOut: result.soldOut,
-            exportedToCrowdfunding: exportSuccess
+            exportedToCrowdfunding: exportSuccess,
+            message: exportSuccess
+                ? `Purchase confirmed and exported to crowdfunding!`
+                : `Purchase confirmed, but crowdfunding export failed. Manual intervention may be needed.`
         });
 
     } catch (error) {
