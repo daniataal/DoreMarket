@@ -13,6 +13,8 @@ export async function POST(
         }
 
         const { id: exportId } = await params;
+        const body = await request.json();
+        const rejectionReason = body.reason || 'No reason provided';
 
         // Get the pending export
         const pendingExport = await prisma.pendingExport.findUnique({
@@ -32,12 +34,13 @@ export async function POST(
             where: { id: exportId },
             data: {
                 status: 'REJECTED',
+                rejectionReason: rejectionReason,
                 reviewedBy: session.user.email || 'admin',
                 reviewedAt: new Date()
             }
         });
 
-        console.log(`[Admin] Export ${exportId} rejected by ${session.user.email}`);
+        console.log(`[Admin] Export ${exportId} rejected by ${session.user.email}. Reason: ${rejectionReason}`);
 
         return NextResponse.json({
             success: true,
