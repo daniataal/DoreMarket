@@ -15,7 +15,7 @@ export async function POST(
         const params = await props.params;
         const dealId = params.id;
         const body = await request.json();
-        const { quantity, deliveryLocation } = body;
+        const { quantity, deliveryLocation, agreementTerms } = body;
 
         if (!quantity || quantity <= 0) {
             return NextResponse.json({ error: "Invalid quantity" }, { status: 400 });
@@ -129,6 +129,32 @@ export async function POST(
             console.error(`[Marketplace] Failed to create pending export:`, err.message);
         }
 
+        // 7. Create Agreement (SPA) if terms provided
+        if (agreementTerms) {
+            try {
+                // Extract buyer name from agreement terms (it's in the format "BUYER: Name")
+                const buyerMatch = agreementTerms.match(/BUYER:\s*(.+)/);
+                const sellerMatch = agreementTerms.match(/SELLER:\s*(.+)/);
+                const buyerName = buyerMatch ? buyerMatch[1].trim() : buyer.name || 'Buyer';
+                const sellerName = sellerMatch ? sellerMatch[1].trim() : deal.company;
+
+                await prisma.agreement.create({
+                    data: {
+                        dealId: deal.id,
+                        buyerName: buyerName,
+                        sellerName: sellerName,
+                        agreementDate: new Date(),
+                        terms: agreementTerms,
+                        status: 'SIGNED'
+                    }
+                });
+
+                console.log(`[Marketplace] Created signed SPA for deal ${deal.id}`);
+            } catch (err: any) {
+                console.error(`[Marketplace] Failed to create agreement:`, err.message);
+                // Don't fail the purchase if agreement creation fails
+            }
+        }
 
         return NextResponse.json({
             success: true,

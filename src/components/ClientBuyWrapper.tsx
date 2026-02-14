@@ -5,7 +5,7 @@ import { PurchaseModal } from "./PurchaseModal";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function ClientBuyButton({ deal, userBalance }: { deal: any; userBalance: number }) {
+export default function ClientBuyButton({ deal, userBalance, userInfo }: { deal: any; userBalance: number; userInfo?: any }) {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDeal, setSelectedDeal] = useState<any>(null);
