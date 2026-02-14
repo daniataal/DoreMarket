@@ -26,6 +26,7 @@ export default function EditDealForm({ deal }: { deal: any }) {
     const [purity, setPurity] = useState(deal.purity || 0.9999);
     const [pricingModel, setPricingModel] = useState(deal.pricingModel || 'FIXED');
     const [discount, setDiscount] = useState(deal.discount || 0);
+    const [fixedPrice, setFixedPrice] = useState<number | ''>(deal.pricingModel === 'FIXED' ? deal.pricePerKg : '');
     const [marketPrice, setMarketPrice] = useState(0);
     const [quantity, setQuantity] = useState(deal.quantity || 0);
 
@@ -46,7 +47,9 @@ export default function EditDealForm({ deal }: { deal: any }) {
         }
     }, [type]);
 
-    const calculatedPrice = (marketPrice * purity) * (1 - discount / 100);
+    const calculatedPrice = pricingModel === 'FIXED'
+        ? (fixedPrice === '' ? 0 : fixedPrice)
+        : (marketPrice * purity) * (1 - discount / 100);
 
     return (
         <div className="max-w-5xl mx-auto pb-10">
@@ -204,21 +207,40 @@ export default function EditDealForm({ deal }: { deal: any }) {
                                     <input type="hidden" name="pricingModel" value={pricingModel} />
                                 </div>
 
-                                {/* Discount */}
+                                {/* Discount or Fixed Price */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-muted-foreground">Discount (%)</label>
-                                    <div className="relative">
-                                        <input
-                                            name="discount"
-                                            type="number"
-                                            step="0.1"
-                                            value={discount}
-                                            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                            className="w-full p-3 bg-secondary/50 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono pr-8"
-                                            placeholder="2.0"
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
-                                    </div>
+                                    {pricingModel === 'FIXED' ? (
+                                        <>
+                                            <label className="block text-sm font-medium mb-2 text-muted-foreground">Fixed Price ($/kg)</label>
+                                            <input
+                                                name="fixedPrice"
+                                                type="number"
+                                                step="0.01"
+                                                value={fixedPrice}
+                                                onChange={(e) => setFixedPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                className="w-full p-3 bg-secondary/50 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono"
+                                                placeholder="0.00"
+                                            />
+                                            <input type="hidden" name="discount" value="0" />
+                                            <p className="text-xs text-muted-foreground mt-1">Set a fixed price per kilogram</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <label className="block text-sm font-medium mb-2 text-muted-foreground">Discount (%)</label>
+                                            <div className="relative">
+                                                <input
+                                                    name="discount"
+                                                    type="number"
+                                                    step="0.1"
+                                                    value={discount}
+                                                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                                    className="w-full p-3 bg-secondary/50 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono pr-8"
+                                                    placeholder="2.0"
+                                                />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

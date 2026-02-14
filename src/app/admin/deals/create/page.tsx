@@ -13,6 +13,7 @@ export default function CreateDealPage() {
     const [pricingModel, setPricingModel] = useState('FIXED');
     const [purity, setPurity] = useState(0.9999);
     const [discount, setDiscount] = useState(0);
+    const [fixedPrice, setFixedPrice] = useState<number | ''>('');
     const [quantity, setQuantity] = useState<number | ''>('');
 
     // Market Data
@@ -21,7 +22,9 @@ export default function CreateDealPage() {
     const [priceError, setPriceError] = useState(false);
 
     // Derived Values
-    const calculatedPrice = (marketPrice * purity) * (1 - discount / 100);
+    const calculatedPrice = pricingModel === 'FIXED'
+        ? (fixedPrice === '' ? 0 : fixedPrice)
+        : (marketPrice * purity) * (1 - discount / 100);
 
     // Fetch initial market price and poll every 10 seconds
     useEffect(() => {
@@ -244,21 +247,43 @@ export default function CreateDealPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="discount">Discount (%)</label>
-                                        <input
-                                            type="number"
-                                            name="discount"
-                                            id="discount"
-                                            required
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                            value={discount}
-                                            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/50"
-                                            placeholder="0.00"
-                                        />
-                                        <p className="text-xs text-muted-foreground mt-1">Discount applied to Purity-Adjusted Price</p>
+                                        {pricingModel === 'FIXED' ? (
+                                            <>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="fixedPrice">Fixed Price ($/kg)</label>
+                                                <input
+                                                    type="number"
+                                                    name="fixedPrice"
+                                                    id="fixedPrice"
+                                                    required
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={fixedPrice}
+                                                    onChange={(e) => setFixedPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                    className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/50"
+                                                    placeholder="0.00"
+                                                />
+                                                <input type="hidden" name="discount" value="0" />
+                                                <p className="text-xs text-muted-foreground mt-1">Set a fixed price per kilogram</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="discount">Discount (%)</label>
+                                                <input
+                                                    type="number"
+                                                    name="discount"
+                                                    id="discount"
+                                                    required
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.01"
+                                                    value={discount}
+                                                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                                    className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/50"
+                                                    placeholder="0.00"
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">Discount applied to Purity-Adjusted Price</p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>

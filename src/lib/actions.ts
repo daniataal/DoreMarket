@@ -161,7 +161,13 @@ export async function createDeal(
         let initialPricePerKg = 0;
 
         if (pricingModel === 'FIXED') {
-            initialPricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+            const fixedPrice = parseFloat(formData.get("fixedPrice") as string);
+            if (!isNaN(fixedPrice)) {
+                initialPricePerKg = fixedPrice;
+            } else {
+                // Fallback if fixedPrice is missing but model is FIXED (should not happen with valid form)
+                initialPricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+            }
         } else {
             initialPricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
         }
@@ -254,7 +260,16 @@ export async function updateDeal(
         let pricePerKg = 0;
 
         // Recalculate pricePerKg based on new params
-        pricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+        if (pricingModel === 'FIXED') {
+            const fixedPrice = parseFloat(formData.get("fixedPrice") as string);
+            if (!isNaN(fixedPrice)) {
+                pricePerKg = fixedPrice;
+            } else {
+                pricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+            }
+        } else {
+            pricePerKg = GoldPriceService.calculateDealPrice(currentMarketPrice, purity, discount);
+        }
 
         await prisma.deal.update({
             where: { id },
@@ -267,7 +282,7 @@ export async function updateDeal(
                 quantity,
                 purity,
                 discount,
-                pricePerKg: pricingModel === 'FIXED' ? pricePerKg : 0, // 0 or placeholder
+                pricePerKg: pricingModel === 'FIXED' ? pricePerKg : 0, // 0 for dynamic (calculated live), stored for fixed
             },
         });
 

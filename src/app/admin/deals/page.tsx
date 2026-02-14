@@ -62,7 +62,9 @@ export default async function AdminDealsPage() {
                                                     <span>Fixed: ${deal.pricePerKg.toLocaleString()}/kg</span>
                                                 )}
                                             </div>
-                                            <div className="text-xs text-accent mt-0.5">-{deal.discount}% Desc</div>
+                                            {deal.pricingModel !== 'FIXED' && (
+                                                <div className="text-xs text-accent mt-0.5">-{deal.discount}% Desc</div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
