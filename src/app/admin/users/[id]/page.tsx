@@ -6,8 +6,9 @@ import { KycActions } from "@/components/admin/KycActions";
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminUserDetailPage({ params }: { params: { id: string } }) {
-    const user = await getUserDetails(params.id);
+export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const user = await getUserDetails(id);
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
@@ -39,7 +40,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                         <div className="flex justify-between py-2 border-b border-border/50">
                             <span className="text-muted-foreground">KyC Status</span>
                             <span className={`font-medium ${user.kycStatus === 'APPROVED' ? 'text-emerald-500' :
-                                    user.kycStatus === 'REJECTED' ? 'text-destructive' : 'text-amber-500'
+                                user.kycStatus === 'REJECTED' ? 'text-destructive' : 'text-amber-500'
                                 }`}>{user.kycStatus}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-border/50">
@@ -132,14 +133,14 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${tx.type === 'DEPOSIT' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                    tx.type === 'WITHDRAWAL' ? 'bg-amber-500/10 text-amber-500' :
-                                                        'bg-blue-500/10 text-blue-500'
+                                                tx.type === 'WITHDRAWAL' ? 'bg-amber-500/10 text-amber-500' :
+                                                    'bg-blue-500/10 text-blue-500'
                                                 }`}>
                                                 {tx.type}
                                             </span>
                                         </td>
                                         <td className={`px-6 py-4 font-mono font-medium ${tx.type === 'DEPOSIT' ? 'text-emerald-500' :
-                                                tx.type === 'WITHDRAWAL' ? 'text-foreground' : 'text-foreground'
+                                            tx.type === 'WITHDRAWAL' ? 'text-foreground' : 'text-foreground'
                                             }`}>
                                             {tx.type === 'WITHDRAWAL' || tx.type === 'PURCHASE' ? '-' : '+'}
                                             ${Math.abs(tx.amount).toLocaleString()}
