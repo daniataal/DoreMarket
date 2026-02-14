@@ -20,6 +20,7 @@ type PendingExport = {
     cfTransportMethod: string;
     cfMetalForm: string;
     cfPurityPercent: number;
+    status: string;
     createdAt: Date;
     deal: {
         company: string;
@@ -33,6 +34,7 @@ type PendingExport = {
         totalPrice: number;
         createdAt: Date;
         buyer: {
+            id: string;
             name: string | null;
             email: string;
         };
