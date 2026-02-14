@@ -131,6 +131,15 @@ export async function createDeal(
     const quantity = parseFloat(formData.get("quantity") as string);
     const discount = parseFloat(formData.get("discount") as string);
 
+    // Crowdfunding parameters (with defaults)
+    const cfRisk = (formData.get("cfRisk") as string) || "Low";
+    const cfTargetApy = parseFloat((formData.get("cfTargetApy") as string) || "12.5");
+    const cfDuration = parseInt((formData.get("cfDuration") as string) || "12");
+    const cfMinInvestment = parseFloat((formData.get("cfMinInvestment") as string) || "500");
+    const cfOrigin = (formData.get("cfOrigin") as string) || "Africa";
+    const cfTransportMethod = (formData.get("cfTransportMethod") as string) || "Air Freight";
+    const cfIcon = (formData.get("cfIcon") as string) || "gold-bar";
+
     // Check if purity is manually provided, otherwise derive from type
     let purity = 0.9999;
     const purityInput = formData.get("purity");
@@ -170,6 +179,14 @@ export async function createDeal(
                 marketPrice: currentMarketPrice,
                 pricePerKg: initialPricePerKg, // This is the starting price
                 status: "OPEN",
+                // Crowdfunding export parameters
+                cfRisk,
+                cfTargetApy,
+                cfDuration,
+                cfMinInvestment,
+                cfOrigin,
+                cfTransportMethod,
+                cfIcon,
             },
         });
     } catch (error) {

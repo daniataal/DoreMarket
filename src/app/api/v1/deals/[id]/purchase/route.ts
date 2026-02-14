@@ -99,65 +99,43 @@ export async function POST(
             return { purchase, updatedDeal, soldOut: updatedDeal.availableQuantity <= 0 };
         });
 
-        // 6. Export THIS PURCHASE to Crowdfunding immediately
-        // Each purchase becomes its own crowdfunding opportunity
-        let exportSuccess = false;
-        const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
-
+        // 6. Create Pending Export for Admin Review
+        // Instead of immediately exporting, create a pending export record
         try {
-            console.log(`[Marketplace] Exporting purchase ${result.purchase.id} (${quantity}kg) to Crowdfunding`);
-
-            const exportPayload = {
-                type: "Metals",
-                name: `${deal.company} - ${deal.commodity} (${quantity}kg)`,
-                icon: "gold-bar",
-                risk: "Low",
-                targetApy: 12.5,
-                duration: 12,
-                minInvestment: 500,
-                amountRequired: totalCost, // Use purchase total, not full deal total
-                description: `Secured ${deal.commodity} purchase from ${deal.company}. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || deal.deliveryLocation}.`,
-                origin: "Africa",
-                destination: deliveryLocation || deal.deliveryLocation,
-                transportMethod: "Air Freight",
-                metalForm: "Bar",
-                purityPercent: 99.9,
-                shipmentId: result.purchase.id // Reference the purchase, not the deal
-            };
-
-            const response = await fetch(CROWDFUNDING_API, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(exportPayload)
+            await prisma.pendingExport.create({
+                data: {
+                    purchaseId: result.purchase.id,
+                    dealId: deal.id,
+                    cfType: "Metals",
+                    cfName: `${deal.company} - ${deal.commodity} ${deal.type} (${quantity}kg)`,
+                    cfIcon: deal.cfIcon,
+                    cfRisk: deal.cfRisk,
+                    cfTargetApy: deal.cfTargetApy,
+                    cfDuration: deal.cfDuration,
+                    cfMinInvestment: deal.cfMinInvestment,
+                    cfAmountRequired: totalCost,
+                    cfDescription: `Secured ${deal.commodity} ${deal.type} purchase from ${deal.company}. Purity: ${(deal.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || deal.deliveryLocation}.`,
+                    cfOrigin: deal.cfOrigin,
+                    cfDestination: deliveryLocation || deal.deliveryLocation,
+                    cfTransportMethod: deal.cfTransportMethod,
+                    cfMetalForm: deal.type,
+                    cfPurityPercent: deal.purity * 100,
+                    status: "PENDING"
+                }
             });
 
-            if (response.ok) {
-                exportSuccess = true;
-                const crowdfundingData = await response.json();
-                console.log(`[Marketplace] Successfully exported purchase ${result.purchase.id} to Crowdfunding. Campaign ID: ${crowdfundingData?.data?.id || 'unknown'}`);
-
-                // Optionally: Update purchase record with crowdfunding ID
-                // await prisma.purchase.update({
-                //     where: { id: result.purchase.id },
-                //     data: { crowdfundingId: crowdfundingData.data.id }
-                // });
-            } else {
-                const errorText = await response.text();
-                console.error(`[Marketplace] Crowdfunding export failed:`, errorText);
-            }
+            console.log(`[Marketplace] Created pending export for purchase ${result.purchase.id}. Awaiting admin review.`);
         } catch (err: any) {
-            console.error(`[Marketplace] Crowdfunding export error:`, err.message);
+            console.error(`[Marketplace] Failed to create pending export:`, err.message);
         }
+
 
         return NextResponse.json({
             success: true,
             purchase: result.purchase,
             availableQuantity: result.updatedDeal.availableQuantity,
             soldOut: result.soldOut,
-            exportedToCrowdfunding: exportSuccess,
-            message: exportSuccess
-                ? `Purchase confirmed and exported to crowdfunding!`
-                : `Purchase confirmed, but crowdfunding export failed. Manual intervention may be needed.`
+            message: `Purchase confirmed! Export pending admin review before being sent to crowdfunding platform.`
         });
 
     } catch (error) {

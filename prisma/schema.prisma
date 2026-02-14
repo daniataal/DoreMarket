@@ -23,6 +23,16 @@ model Deal {
   purity            Float       @default(0.9999) // 0.9999 for Bullion, 0.916 for 22k, etc.
   pricingModel      String      @default("FIXED") // FIXED, DYNAMIC
   marketPrice       Float       @default(0) // LBMA price at creation (for reference or fixed deals)
+  
+  // Crowdfunding export parameters (defaults for when purchases are exported)
+  cfRisk            String      @default("Low") // Risk level for crowdfunding
+  cfTargetApy       Float       @default(12.5) // Target APY for investors
+  cfDuration        Int         @default(12) // Campaign duration in months
+  cfMinInvestment   Float       @default(500) // Minimum investment amount
+  cfOrigin          String      @default("Africa") // Origin location
+  cfTransportMethod String      @default("Air Freight") // Transport method
+  cfIcon            String      @default("gold-bar") // Icon for crowdfunding listing
+  
   crowdfundingId    String?
   buyerId           String?
   buyer             User?       @relation("DealBuyer", fields: [buyerId], references: [id])
@@ -30,6 +40,7 @@ model Deal {
   updatedAt         DateTime    @updatedAt
   agreement         Agreement?
   purchases         Purchase[]
+  pendingExports    PendingExport[]
 }
 
 model User {
@@ -82,6 +93,7 @@ model Purchase {
   
   deal             Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
   buyer            User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  pendingExports   PendingExport[]
   
   @@index([dealId])
   @@index([buyerId])
@@ -100,3 +112,40 @@ model Agreement {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+model PendingExport {
+  id                String   @id @default(uuid())
+  purchaseId        String
+  dealId            String
+  purchase          Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  deal              Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  
+  // Editable crowdfunding parameters
+  cfType            String   @default("Metals")
+  cfName            String
+  cfIcon            String
+  cfRisk            String
+  cfTargetApy       Float
+  cfDuration        Int
+  cfMinInvestment   Float
+  cfAmountRequired  Float
+  cfDescription     String   @db.Text
+  cfOrigin          String
+  cfDestination     String
+  cfTransportMethod String
+  cfMetalForm       String
+  cfPurityPercent   Float
+  
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED, EXPORTED
+  crowdfundingId    String?  // Set after successful export
+  reviewedBy        String?  // Admin who reviewed
+  reviewedAt        DateTime?
+  exportedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([purchaseId])
+  @@index([dealId])
+  @@index([status])
+}
+
