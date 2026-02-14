@@ -8,10 +8,10 @@ interface UserActionsProps {
     userId: string;
     currentRole: string;
     userName: string;
-    walletFrozen: boolean;
+    walletFrozen?: boolean; // Optional until Prisma migration is run
 }
 
-export function UserActions({ userId, currentRole, userName, walletFrozen }: UserActionsProps) {
+export function UserActions({ userId, currentRole, userName, walletFrozen = false }: UserActionsProps) {
     const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -77,8 +77,8 @@ export function UserActions({ userId, currentRole, userName, walletFrozen }: Use
             <button
                 onClick={handleFreezeToggle}
                 className={`p-1.5 rounded-lg transition-colors ${isFrozen
-                        ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20'
-                        : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10'
+                    ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20'
+                    : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10'
                     }`}
                 title={isFrozen ? "Unfreeze Wallet" : "Freeze Wallet"}
                 disabled={loading}
