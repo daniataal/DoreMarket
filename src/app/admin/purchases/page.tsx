@@ -68,7 +68,7 @@ export default async function AdminPurchasesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {purchases.map((p) => {
+                            {purchases.map((p: any) => {
                                 const purchase = p as any;
                                 return (
                                     <tr key={purchase.id} className="hover:bg-secondary/20 transition-colors">

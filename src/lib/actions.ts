@@ -483,7 +483,7 @@ export async function signPurchaseAgreement(purchaseId: string, spaData: any) {
 
         const buyerName = `${purchase.buyer?.firstName || purchase.buyer?.name || ''} ${purchase.buyer?.lastName || ''}`.trim() || 'Buyer';
 
-        await prisma.agreement.upsert({
+        await (prisma as any).agreement.upsert({
             where: { purchaseId },
             create: {
                 purchaseId,

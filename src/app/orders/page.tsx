@@ -62,7 +62,7 @@ export default async function OrdersPage() {
                             <p className="text-muted-foreground mt-1">Visit the dashboard to start trading.</p>
                         </div>
                     ) : (
-                        purchases.map((p) => {
+                        purchases.map((p: any) => {
                             const purchase = p as any;
                             return (
                                 <div key={purchase.id} className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-6">
