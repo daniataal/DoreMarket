@@ -20,7 +20,8 @@ export default async function Dashboard() {
     // Recalculate prices for Dynamic deals
     const livePrice = await GoldPriceService.getLivePricePerKg();
 
-    const deals = dealsData.map(deal => {
+    const deals = dealsData.map((d: any) => {
+        const deal = d as any;
         if (deal.pricingModel === 'DYNAMIC') {
             return {
                 ...deal,

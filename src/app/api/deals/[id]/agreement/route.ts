@@ -16,30 +16,21 @@ export async function POST(
         const dealId = params.id;
         const data = await req.json();
 
-        // Verify ownership
-        const deal = await prisma.deal.findUnique({
-            where: { id: dealId },
-            include: { agreement: true }
-        });
-
-        if (!deal) return NextResponse.json({ error: "Deal not found" }, { status: 404 });
-        if (deal.buyerId !== session.user.id) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-
-        // Update or Create Agreement
-        // We expect the frontend to send the 'terms' or 'htmlContent' (though storing HTML in DB is risky, usually we store data points)
-        // For this MVP, we store the full text terms.
-
+        // Deprecated: Agreement is now linked to Purchase.
+        // This route is obsolete and should be removed.
+        return NextResponse.json({ success: true, message: "Obsolete route" });
+        /*
         const agreement = await prisma.agreement.upsert({
-            where: { dealId: dealId },
+            where: { purchaseId: dealId }, // This is doubly wrong now
             update: {
                 buyerName: data.buyerName,
                 sellerName: data.sellerName,
                 agreementDate: new Date(data.date),
                 terms: data.terms,
-                status: "SIGNED" // Auto-sign for now
+                status: "SIGNED"
             },
             create: {
-                dealId: dealId,
+                purchaseId: dealId,
                 buyerName: data.buyerName,
                 sellerName: data.sellerName,
                 agreementDate: new Date(data.date),
@@ -47,8 +38,9 @@ export async function POST(
                 status: "SIGNED"
             }
         });
+        */
 
-        return NextResponse.json({ success: true, agreement });
+        return NextResponse.json({ success: true, agreement: null });
 
     } catch (error) {
         console.error("Agreement error:", error);

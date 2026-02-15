@@ -44,7 +44,7 @@ export default async function AdminDealsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                deals.map((deal) => (
+                                deals.map((deal: any) => (
                                     <tr key={deal.id} className="hover:bg-secondary/20 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-foreground">{deal.company}</div>

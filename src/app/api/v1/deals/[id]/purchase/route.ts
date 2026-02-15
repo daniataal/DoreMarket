@@ -102,24 +102,25 @@ export async function POST(
         // 6. Create Pending Export for Admin Review
         // Instead of immediately exporting, create a pending export record
         try {
-            await prisma.pendingExport.create({
+            const d = deal as any;
+            await (prisma as any).pendingExport.create({
                 data: {
                     purchaseId: result.purchase.id,
                     dealId: deal.id,
                     cfType: "Metals",
-                    cfName: `${deal.company} - ${deal.commodity} ${deal.type} (${quantity}kg)`,
-                    cfIcon: deal.cfIcon,
-                    cfRisk: deal.cfRisk,
-                    cfTargetApy: deal.cfTargetApy,
-                    cfDuration: deal.cfDuration,
-                    cfMinInvestment: deal.cfMinInvestment,
+                    cfName: `${d.company} - ${d.commodity} ${d.type} (${quantity}kg)`,
+                    cfIcon: d.cfIcon,
+                    cfRisk: d.cfRisk,
+                    cfTargetApy: d.cfTargetApy,
+                    cfDuration: d.cfDuration,
+                    cfMinInvestment: d.cfMinInvestment,
                     cfAmountRequired: totalCost,
-                    cfDescription: `Secured ${deal.commodity} ${deal.type} purchase from ${deal.company}. Purity: ${(deal.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || deal.deliveryLocation}.`,
-                    cfOrigin: deal.cfOrigin,
-                    cfDestination: deliveryLocation || deal.deliveryLocation,
-                    cfTransportMethod: deal.cfTransportMethod,
-                    cfMetalForm: deal.type,
-                    cfPurityPercent: deal.purity * 100,
+                    cfDescription: `Secured ${d.commodity} ${d.type} purchase from ${d.company}. Purity: ${(d.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || d.deliveryLocation}.`,
+                    cfOrigin: d.cfOrigin,
+                    cfDestination: deliveryLocation || d.deliveryLocation,
+                    cfTransportMethod: d.cfTransportMethod,
+                    cfMetalForm: d.type,
+                    cfPurityPercent: d.purity * 100,
                     status: "PENDING"
                 }
             });
@@ -138,10 +139,10 @@ export async function POST(
                 const buyerName = buyerMatch ? buyerMatch[1].trim() : (buyer?.name || 'Buyer');
                 const sellerName = sellerMatch ? sellerMatch[1].trim() : deal.company;
 
-                // Create Agreement record (PDF generation moved to client-side)
-                await prisma.agreement.create({
+                // Create Agreement record linked to Purchase
+                await (prisma as any).agreement.create({
                     data: {
-                        dealId: deal.id,
+                        purchaseId: result.purchase.id,
                         buyerName: buyerName,
                         sellerName: sellerName,
                         agreementDate: new Date(),
