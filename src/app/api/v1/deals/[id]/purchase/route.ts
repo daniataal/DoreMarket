@@ -131,13 +131,45 @@ export async function POST(
         }
 
         // 7. Create Agreement (SPA) record if terms provided
+        const d = deal as any;
         if (agreementTerms) {
             try {
                 // Extract buyer name from agreement terms (it's in the format "BUYER: Name")
                 const buyerMatch = agreementTerms.match(/BUYER:\s*(.+)/);
                 const sellerMatch = agreementTerms.match(/SELLER:\s*(.+)/);
-                const buyerName = buyerMatch ? buyerMatch[1].trim() : (buyer?.name || 'Buyer');
+                const buyerName = buyerMatch ? buyerMatch[1].trim() : `${buyer?.firstName || buyer?.name || ''} ${buyer?.lastName || ''}`.trim() || 'Buyer';
                 const sellerName = sellerMatch ? sellerMatch[1].trim() : deal.company;
+
+                // Create a snapshot of SPA variables to "freeze" the agreement
+                const spaData = {
+                    DEAL_ID: deal.externalId || deal.id,
+                    DATE: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    SELLER_NAME: sellerName,
+                    SELLER_ADDRESS: process.env.SELLER_ADDRESS || "Meydan Grandstand, Dubai, UAE",
+                    SELLER_TRADE_LICENCE: process.env.SELLER_TRADE_LICENSE || "2537157.01",
+                    SELLER_REPRESENTATIVE: process.env.SELLER_REPRESENTATIVE || "Thalefo Moshanyana",
+                    SELLER_PASSPORT_NUMBER: process.env.SELLER_PASSPORT_NUMBER || "A11611955",
+                    SELLER_PASSPORT_EXPIRY: process.env.SELLER_PASSPORT_EXPIRY || "13/11/2034",
+                    SELLER_COUNTRY: process.env.SELLER_COUNTRY || "UAE",
+                    SELLER_TELEPHONE: process.env.SELLER_TELEPHONE || "(+27) 063 638 9245",
+                    SELLER_EMAIL: process.env.SELLER_EMAIL || "",
+                    BUYER_NAME: buyerName,
+                    BUYER_ADDRESS: buyer?.address || "[Buyer Address to be provided]",
+                    BUYER_TRADE_LICENCE: "[Buyer Trade Licence to be provided]",
+                    BUYER_REPRESENTED_BY: buyerName,
+                    BUYER_COUNTRY: buyer?.nationality || "[Buyer Country to be provided]",
+                    BUYER_TELEPHONE: "[Buyer Telephone to be provided]",
+                    BUYER_EMAIL: buyer?.email || "",
+                    AU_PURITY: `${(d.purity * 100).toFixed(2)}%`,
+                    AU_FINESSE: d.purity >= 0.9999 ? "24 Carat" : "+23 Carats",
+                    AU_ORIGIN: "Uganda",
+                    AU_ORIGIN_PORT: "Kampala",
+                    AU_DELIVERY_PORT: "DXB – Dubai International Airport",
+                    AU_DESTINATION: deliveryLocation || deal.deliveryLocation,
+                    QUANTITY: quantity.toString(),
+                    PRICE: `$${deal.pricePerKg.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/kg`,
+                    DELIVERY_COUNTRY: "UAE" // Simplified or derived from location
+                };
 
                 // Create Agreement record linked to Purchase
                 await (prisma as any).agreement.create({
@@ -146,16 +178,16 @@ export async function POST(
                         buyerName: buyerName,
                         sellerName: sellerName,
                         agreementDate: new Date(),
-                        terms: "Standard SPA Template applied. PDF generated client-side.",
-                        status: 'DRAFT',
+                        terms: agreementTerms,
+                        spaData: spaData,
+                        status: 'SIGNED',
                         pdfUrl: null
                     }
                 });
 
-                console.log(`[Marketplace] Created Agreement record for deal ${deal.id}`);
+                console.log(`[Marketplace] Created and SIGNED Agreement record for deal ${deal.id}`);
             } catch (err: any) {
                 console.error(`[Marketplace] Failed to create agreement record:`, err.message);
-                // Don't fail the purchase if agreement creation fails
             }
         }
 

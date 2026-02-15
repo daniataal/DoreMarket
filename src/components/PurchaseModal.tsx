@@ -161,7 +161,7 @@ SELLER: ${sellerName}
         setError('');
 
         try {
-            await onPurchase(quantity, fullDeliveryLocation, "Standard SPA Template");
+            await onPurchase(quantity, fullDeliveryLocation, spaTerms);
             onClose();
         } catch (err: any) {
             setError(err.message || 'Purchase failed. Please try again.');
@@ -473,7 +473,7 @@ SELLER: ${sellerName}
                             disabled={!canPurchase || loading}
                             className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-primary/80 hover:to-primary text-white rounded-lg font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
-                            {loading ? 'Processing...' : 'Confirm Purchase & Generate SPA (Draft)'}
+                            {loading ? 'Processing...' : 'Confirm Purchase & Sign SPA'}
                         </button>
                     </div>
                 </div>

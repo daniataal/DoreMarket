@@ -112,8 +112,8 @@ export default function SpaViewButton({ purchase, sellerConfig }: SpaViewButtonP
                 onClick={handlePreview}
                 disabled={loading}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${isSigned
-                        ? "bg-green-600 hover:bg-green-700 text-white"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
                     }`}
                 title={isSigned ? "View Signed SPA" : "View Draft SPA"}
             >
@@ -125,21 +125,6 @@ export default function SpaViewButton({ purchase, sellerConfig }: SpaViewButtonP
                 {isSigned ? 'View SPA (Signed)' : 'Preview SPA'}
             </button>
 
-            {!isSigned && (
-                <button
-                    onClick={handleSign}
-                    disabled={signing}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                    title="Sign and Save SPA"
-                >
-                    {signing ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                        <CheckCircle className="w-4 h-4" />
-                    )}
-                    Sign SPA
-                </button>
-            )}
         </div>
     );
 }

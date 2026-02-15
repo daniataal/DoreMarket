@@ -25,13 +25,13 @@ export default function ClientBuyButton({
         setIsModalOpen(true);
     };
 
-    const handlePurchase = async (quantity: number, deliveryLocation: string) => {
+    const handlePurchase = async (quantity: number, deliveryLocation: string, agreementTerms?: string) => {
         if (!selectedDeal) return;
 
         const res = await fetch(`/api/v1/deals/${selectedDeal.id}/purchase`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quantity, deliveryLocation })
+            body: JSON.stringify({ quantity, deliveryLocation, agreementTerms })
         });
 
         const data = await res.json();
