@@ -23,6 +23,7 @@ interface PurchaseModalProps {
         name?: string | null;
         firstName?: string | null;
         lastName?: string | null;
+        email?: string | null;
     };
     onPurchase: (quantity: number, deliveryLocation: string, agreementTerms: string) => Promise<void>;
 }
@@ -334,26 +335,38 @@ SELLER: ${sellerName}
                                 onClick={async () => {
                                     try {
                                         setLoading(true);
-                                        const res = await fetch('/api/v1/spa/preview', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                dealId: deal.id,
-                                                quantity,
-                                                deliveryLocation: fullDeliveryLocation,
-                                                buyerName,
-                                                sellerName,
-                                                pricePerKg: deal.pricePerKg,
-                                                totalCost,
-                                                commodity: deal.commodity,
-                                                purity: `${(deal.purity || 0) * 100}%`
-                                            })
+                                        // Dynamic import to avoid SSR issues with react-pdf
+                                        const { generateSpaPdfUrl } = await import('@/components/SpaPdfDocument');
+
+                                        const url = await generateSpaPdfUrl({
+                                            dealId: deal.id,
+                                            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                                            sellerName: deal.company, // Or fetch from env if possible, but env vars are not exposed to client by default without NEXT_PUBLIC_ prefix
+                                            // Ideally these would come from an API endpoint that returns the config, but for now we'll use placeholders or what we have
+                                            sellerAddress: "Meydan Grandstand, Dubai, UAE",
+                                            sellerLicense: "XXX7157.01",
+                                            sellerRep: "Xxxlefo Moshanyana",
+                                            sellerPassport: "A11611XXX",
+                                            sellerExpiry: "13/11/2034",
+                                            sellerCountry: "South Africa - ZAF",
+                                            sellerPhone: "XXX 638 9245",
+                                            sellerEmail: "",
+                                            buyerName: buyerName,
+                                            buyerEmail: userInfo?.email || "",
+                                            commodity: deal.commodity,
+                                            purity: `${(deal.purity || 0) * 100}%`,
+                                            quantity: quantity,
+                                            pricePerKg: deal.pricePerKg,
+                                            totalCost: totalCost,
+                                            deliveryLocation: fullDeliveryLocation,
+                                            sellerBankName: "",
+                                            sellerBankAddress: "",
+                                            sellerAccountName: "",
+                                            sellerAccountNumber: "",
+                                            sellerSwift: ""
                                         });
-                                        const data = await res.json();
-                                        if (data.previewUrl) {
-                                            // Open the PDF in a new tab for preview
-                                            window.open(data.previewUrl, '_blank');
-                                        }
+
+                                        window.open(url, '_blank');
                                     } catch (e) {
                                         console.error(e);
                                         setError('Failed to generate preview');
