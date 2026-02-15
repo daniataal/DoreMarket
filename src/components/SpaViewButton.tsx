@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { FileText, Eye, Loader2, CheckCircle } from 'lucide-react';
+import SpaPreviewModal from './SpaPreviewModal';
 import { signPurchaseAgreement } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 
@@ -13,6 +14,8 @@ interface SpaViewButtonProps {
 export default function SpaViewButton({ purchase, sellerConfig }: SpaViewButtonProps) {
     const [loading, setLoading] = useState(false);
     const [signing, setSigning] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const router = useRouter();
 
     const isSigned = purchase.agreement?.status === 'SIGNED';
@@ -80,7 +83,8 @@ export default function SpaViewButton({ purchase, sellerConfig }: SpaViewButtonP
             const { generateSpaPdfUrl } = await import('@/components/SpaPdfDocument');
             const variables = getSpaVariables();
             const url = await generateSpaPdfUrl(variables);
-            window.open(url, '_blank');
+            setPreviewUrl(url);
+            setShowPreview(true);
         } catch (e) {
             console.error(e);
             alert('Failed to generate SPA preview');
@@ -107,24 +111,33 @@ export default function SpaViewButton({ purchase, sellerConfig }: SpaViewButtonP
     };
 
     return (
-        <div className="flex items-center gap-2">
-            <button
-                onClick={handlePreview}
-                disabled={loading}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${isSigned
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                    }`}
-                title={isSigned ? "View Signed SPA" : "View Draft SPA"}
-            >
-                {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                    <FileText className="w-4 h-4" />
-                )}
-                {isSigned ? 'View SPA (Signed)' : 'Preview SPA'}
-            </button>
+        <>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={handlePreview}
+                    disabled={loading}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${isSigned
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                        }`}
+                    title={isSigned ? "View Signed SPA" : "View Draft SPA"}
+                >
+                    {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <FileText className="w-4 h-4" />
+                    )}
+                    {isSigned ? 'View SPA (Signed)' : 'Preview SPA'}
+                </button>
 
-        </div>
+            </div>
+
+            <SpaPreviewModal
+                isOpen={showPreview}
+                onClose={() => setShowPreview(false)}
+                pdfUrl={previewUrl}
+                title={isSigned ? "Signed Sale & Purchase Agreement" : "Draft Sale & Purchase Agreement"}
+            />
+        </>
     );
 }

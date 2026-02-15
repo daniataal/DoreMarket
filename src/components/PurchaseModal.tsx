@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { X, MapPin, Package, DollarSign, AlertCircle, Warehouse, FileText, Eye } from 'lucide-react';
+import SpaPreviewModal from './SpaPreviewModal';
 
 interface PurchaseModalProps {
     isOpen: boolean;
@@ -58,6 +59,7 @@ export function PurchaseModal({ isOpen, onClose, deal, userBalance, userInfo, se
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [agreedToSPA, setAgreedToSPA] = useState(false);
     const [showSPAPreview, setShowSPAPreview] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -396,7 +398,8 @@ SELLER: ${sellerName}
                                             DELIVERY_COUNTRY: getDeliveryCountry()
                                         });
 
-                                        window.open(url, '_blank');
+                                        setPreviewUrl(url);
+                                        setShowSPAPreview(true);
                                     } catch (e) {
                                         console.error(e);
                                         setError('Failed to generate preview');
@@ -478,6 +481,13 @@ SELLER: ${sellerName}
                     </div>
                 </div>
             </div>
+
+            <SpaPreviewModal
+                isOpen={showSPAPreview}
+                onClose={() => setShowSPAPreview(false)}
+                pdfUrl={previewUrl}
+                title={deal.purity && deal.purity >= 0.9999 ? "Bullion Sale & Purchase Agreement" : "Gold Dore Sale & Purchase Agreement"}
+            />
         </>
     );
 }
