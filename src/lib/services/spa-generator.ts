@@ -88,11 +88,20 @@ export class SpaGeneratorService {
             const outputPath = path.resolve(`./public${relativePath}`);
 
             const launchOptions: any = {
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage' // Helps in containerized environments
+                ]
             };
 
             if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-                launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+                // Only use the custom path if it actually exists
+                if (fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+                    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+                } else {
+                    console.warn(`[SPA Generator] Custom executable path not found: ${process.env.PUPPETEER_EXECUTABLE_PATH}. Using default.`);
+                }
             }
 
             await mdToPdf({ content: content }, {
