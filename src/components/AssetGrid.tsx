@@ -8,9 +8,11 @@ import { Search, Filter, ArrowUpDown } from "lucide-react";
 interface AssetGridProps {
     initialDeals: Deal[];
     userBalance: number;
+    sellerConfig: any;
+    userInfo?: any;
 }
 
-export function AssetGrid({ initialDeals, userBalance }: AssetGridProps) {
+export function AssetGrid({ initialDeals, userBalance, sellerConfig, userInfo }: AssetGridProps) {
     const [filter, setFilter] = useState("");
     const [sortBy, setSortBy] = useState<"price" | "quantity" | "date">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -91,7 +93,12 @@ export function AssetGrid({ initialDeals, userBalance }: AssetGridProps) {
                 ) : (
                     filteredDeals.map((deal) => (
                         <div key={deal.id} className="animate-in fade-in zoom-in-95 duration-300">
-                            <ClientBuyButton deal={deal} userBalance={userBalance} />
+                            <ClientBuyButton
+                                deal={deal}
+                                userBalance={userBalance}
+                                sellerConfig={sellerConfig}
+                                userInfo={userInfo}
+                            />
                         </div>
                     ))
                 )}
