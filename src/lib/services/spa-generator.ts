@@ -97,7 +97,7 @@ export class SpaGeneratorService {
             // Fallback to template if generation fails
             // Since we switched to MD, we can't fallback to the docx easily unless we return that path
             // But the user wants MD basis.
-            return '/documents/spa_template.docx'; // Keep this fallback just in case for now or return empty
+            throw error; // Re-throw to be handled by the caller
         }
     }
 }
