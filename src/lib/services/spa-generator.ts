@@ -87,9 +87,17 @@ export class SpaGeneratorService {
             const relativePath = `/documents/agreements/${fileName}`;
             const outputPath = path.resolve(`./public${relativePath}`);
 
+            const launchOptions: any = {
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            };
+
+            if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+                launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+            }
+
             await mdToPdf({ content: content }, {
                 dest: outputPath,
-                launch_options: { args: ['--no-sandbox', '--disable-setuid-sandbox'] }
+                launch_options: launchOptions
             });
 
             console.log(`[SPA Generator] Generated agreement at ${relativePath}`);
