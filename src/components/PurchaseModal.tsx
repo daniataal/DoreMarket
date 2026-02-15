@@ -24,6 +24,19 @@ interface PurchaseModalProps {
         firstName?: string | null;
         lastName?: string | null;
         email?: string | null;
+        address?: string | null;
+        nationality?: string | null;
+    };
+    sellerConfig: {
+        companyName: string;
+        address: string;
+        tradeLicense: string;
+        representative: string;
+        passportNumber: string;
+        passportExpiry: string;
+        country: string;
+        telephone: string;
+        email: string;
     };
     onPurchase: (quantity: number, deliveryLocation: string, agreementTerms: string) => Promise<void>;
 }
@@ -37,7 +50,7 @@ const DELIVERY_LOCATIONS = [
     { value: 'Other', label: 'Other / Custom Location', icon: '🌍' },
 ];
 
-export function PurchaseModal({ isOpen, onClose, deal, userBalance, userInfo, onPurchase }: PurchaseModalProps) {
+export function PurchaseModal({ isOpen, onClose, deal, userBalance, userInfo, sellerConfig, onPurchase }: PurchaseModalProps) {
     const [quantity, setQuantity] = useState(1);
     const [deliveryLocation, setDeliveryLocation] = useState(deal.deliveryLocation || 'Dubai');
     const [customLocation, setCustomLocation] = useState('');
@@ -339,31 +352,32 @@ SELLER: ${sellerName}
                                         const { generateSpaPdfUrl } = await import('@/components/SpaPdfDocument');
 
                                         const url = await generateSpaPdfUrl({
-                                            dealId: deal.id,
-                                            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                                            sellerName: deal.company, // Or fetch from env if possible, but env vars are not exposed to client by default without NEXT_PUBLIC_ prefix
-                                            // Ideally these would come from an API endpoint that returns the config, but for now we'll use placeholders or what we have
-                                            sellerAddress: "Meydan Grandstand, Dubai, UAE",
-                                            sellerLicense: "XXX7157.01",
-                                            sellerRep: "Xxxlefo Moshanyana",
-                                            sellerPassport: "A11611XXX",
-                                            sellerExpiry: "13/11/2034",
-                                            sellerCountry: "South Africa - ZAF",
-                                            sellerPhone: "XXX 638 9245",
-                                            sellerEmail: "",
-                                            buyerName: buyerName,
-                                            buyerEmail: userInfo?.email || "",
-                                            commodity: deal.commodity,
-                                            purity: `${(deal.purity || 0) * 100}%`,
-                                            quantity: quantity,
-                                            pricePerKg: deal.pricePerKg,
-                                            totalCost: totalCost,
-                                            deliveryLocation: fullDeliveryLocation,
-                                            sellerBankName: "",
-                                            sellerBankAddress: "",
-                                            sellerAccountName: "",
-                                            sellerAccountNumber: "",
-                                            sellerSwift: ""
+                                            DEAL_ID: deal.id,
+                                            DATE: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                                            SELLER_NAME: sellerConfig.companyName,
+                                            SELLER_ADDRESS: sellerConfig.address,
+                                            SELLER_TRADE_LICENCE: sellerConfig.tradeLicense,
+                                            SELLER_REPRESENTATIVE: sellerConfig.representative,
+                                            SELLER_PASSPORT_NUMBER: sellerConfig.passportNumber,
+                                            SELLER_PASSPORT_EXPIRY: sellerConfig.passportExpiry,
+                                            SELLER_COUNTRY: sellerConfig.country,
+                                            SELLER_TELEPHONE: sellerConfig.telephone,
+                                            SELLER_EMAIL: sellerConfig.email,
+                                            BUYER_NAME: buyerName,
+                                            BUYER_ADDRESS: userInfo?.address || "[Buyer Address to be provided]",
+                                            BUYER_TRADE_LICENCE: "[Buyer Trade Licence to be provided]",
+                                            BUYER_REPRESENTED_BY: buyerName,
+                                            BUYER_COUNTRY: userInfo?.nationality || "[Buyer Country to be provided]",
+                                            BUYER_TELEPHONE: "[Buyer Telephone to be provided]",
+                                            BUYER_EMAIL: userInfo?.email || "",
+                                            AU_PURITY: `${(deal.purity || 0) * 100}%`,
+                                            AU_FINESSE: deal.purity && deal.purity >= 0.9999 ? "24 Carat" : "+23 Carats",
+                                            AU_ORIGIN: "Uganda", // As per template default or fetch from deal if added later
+                                            AU_ORIGIN_PORT: "Kampala",
+                                            AU_DELIVERY_PORT: "DXB – Dubai International Airport",
+                                            AU_DESTINATION: fullDeliveryLocation,
+                                            QUANTITY: quantity.toString(),
+                                            PRICE: `$${deal.pricePerKg.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/kg`
                                         });
 
                                         window.open(url, '_blank');

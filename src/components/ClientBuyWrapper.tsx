@@ -5,7 +5,17 @@ import { PurchaseModal } from "./PurchaseModal";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function ClientBuyButton({ deal, userBalance, userInfo }: { deal: any; userBalance: number; userInfo?: any }) {
+export default function ClientBuyButton({
+    deal,
+    userBalance,
+    userInfo,
+    sellerConfig
+}: {
+    deal: any;
+    userBalance: number;
+    userInfo?: any;
+    sellerConfig: any;
+}) {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDeal, setSelectedDeal] = useState<any>(null);
@@ -43,6 +53,8 @@ export default function ClientBuyButton({ deal, userBalance, userInfo }: { deal:
                     onClose={() => setIsModalOpen(false)}
                     deal={selectedDeal}
                     userBalance={userBalance}
+                    userInfo={userInfo}
+                    sellerConfig={sellerConfig}
                     onPurchase={handlePurchase}
                 />
             )}

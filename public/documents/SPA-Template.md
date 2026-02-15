@@ -1,94 +1,28 @@
-"use client";
-import React from 'react';
-import { Document, Page, Text, View, StyleSheet, pdf, Font } from '@react-pdf/renderer';
 
-// Register fonts
-Font.register({
-    family: 'Helvetica',
-    fonts: [
-        { src: 'https://cdn.jsdelivr.net/gh/anton-petrov/simple-pdf-thermal-printer@master/fonts/Roboto-Regular.ttf' },
-        { src: 'https://cdn.jsdelivr.net/gh/anton-petrov/simple-pdf-thermal-printer@master/fonts/Roboto-Bold.ttf', fontWeight: 'bold' }
-    ]
-});
-
-const styles = StyleSheet.create({
-    page: {
-        padding: 40,
-        fontFamily: 'Helvetica',
-        fontSize: 8, // Slightly smaller to fit full content gracefully
-        lineHeight: 1.3,
-        color: '#000',
-    },
-    text: {
-        marginBottom: 3,
-        textAlign: 'justify',
-    },
-    bold: {
-        fontWeight: 'bold',
-    },
-    italic: {
-        fontStyle: 'italic',
-    }
-});
-
-export interface SpaVariables {
-    DATE: string;
-    SELLER_NAME: string;
-    SELLER_ADDRESS: string;
-    SELLER_TRADE_LICENCE: string;
-    SELLER_REPRESENTATIVE: string;
-    SELLER_PASSPORT_NUMBER: string;
-    SELLER_PASSPORT_EXPIRY: string;
-    SELLER_COUNTRY: string;
-    SELLER_TELEPHONE: string;
-    SELLER_EMAIL: string;
-    BUYER_NAME: string;
-    BUYER_ADDRESS: string;
-    BUYER_TRADE_LICENCE: string;
-    BUYER_REPRESENTED_BY: string;
-    BUYER_COUNTRY: string;
-    BUYER_TELEPHONE: string;
-    BUYER_EMAIL: string;
-    AU_PURITY: string;
-    AU_FINESSE: string;
-    AU_ORIGIN: string;
-    AU_ORIGIN_PORT: string;
-    AU_DELIVERY_PORT: string;
-    AU_DESTINATION: string;
-    QUANTITY: string;
-    PRICE: string;
-    DEAL_ID: string;
-}
-
-const SPA_TEMPLATE_TEXT = `
 SALE AND PURCHASE AGREEMENT (SPA)
 OF NON-REFINED GOLD (AU) BARS
-TRANSACTION CODE: CIF-FG-UAE-{DATE}-2025-00X
+TRANSACTION CODE: CIF-XX-UAE-{DATE}-2026-00X
 
-This Sales Purchase Agreement (SPA) is made and entered into on the {DATE}, by and between:
+This Sales Purchase Agreement (SPA) is made and entered into on the XX nd day of February 2026, by and between:
 SELLER:
 Company Name:	{SELLER_NAME}
 Business Address:	{SELLER_ADDRESS}
-Trade Licence No.:	{SELLER_TRADE_LICENCE} 
-Represented By:	{SELLER_REPRESENTATIVE}
-Passport Number:	{SELLER_PASSPORT_NUMBER} 
-Passport Expiration:	{SELLER_PASSPORT_EXPIRY}
-Country:		{SELLER_COUNTRY}
-Telephone:		 {SELLER_TELEPHONE}
+Trade Licence No.:		{SELLER_TRADE_LICENCE}
 Email:			{SELLER_EMAIL}
-(Hereinater referred to as “THE SELLER” or “FG”)
+(Hereinater referred to as “THE SELLER” or “XX”)
 AND
 BUYER:
 Company Name: {BUYER_NAME}
 Business Address: {BUYER_ADDRESS}
-Trade Licence No.:	 {BUYER_TRADE_LICENCE}
+Trade Licence No.:		{BUYER_TRADE_LICENCE}
 Represented By:	{BUYER_REPRESENTED_BY}
 Passport Number:	 
 Passport Expiration:	
 Country:		{BUYER_COUNTRY}
 Telephone:		{BUYER_TELEPHONE}
 Email: {BUYER_EMAIL}
-(Hereinafter referred to as “THE BUYER” or “XX))
+(Hereinafter referred to as “THE BUYER” or “XX”)
+
 
 WHEREAS
 1. Seller’s Rights: The Seller has confirmed that they have the legal right to sell and market Gold in the form of Dore Bars as specified in Article 2, currently located in the United Arab Emirates 
@@ -102,26 +36,26 @@ Article 2 – Specification and Quantity of the Au Raw Gold
 • Commodity:		Aurum Utalium (AU)
 • Form:			Gold Dore Bars
 • Purity:		{AU_PURITY}
-• Finesse:		{AU_FINESSE} 
-• Age:			New
+• Finesse:		{AU_FINESSE}
 • Product Origin:	{AU_ORIGIN}
 • Port of Origin:		{AU_ORIGIN_PORT}
 • Port of Delivery:	{AU_DELIVERY_PORT}
 • Final Destination:	{AU_DESTINATION}
 • Quantity: 		{QUANTITY} kg - 10 Kg Spot  
-			Contract - 100 kg per month, with extensions as agreed between Parties
+			Contract - {QUANTITY} kg per month, with extensions as agreed between Parties
 • Packing:	Export package boxes or any other suitable international accepted packaging
-• Price CIF: 		{PRICE} of Gold (AU) content - base price at 96% purity
-3% Commissions to Intermediaries, paid by the Seller, according to IMFPA
+• Price CIF: 		{PRICE} of Gold (AU) content - base price at {AU_PURITY} purity
+• Commissions to Intermediaries, paid by the Seller, according to IMFPA
 • Currency: 		All payments in United States Dollars
 • Payment Mode: 	Bank Transfer MT 103, after Final Assay Report at Refinery accepted by both Buyer and Seller
 • Assay Report:	Final Assay per kilo (gold content) to be made by Buyer’s Refinery and the assay value will be accepted by both parties.
 
+
 Article 3 – Delivery and Testing
 3.1 Terms (INCOTERMS 2020 all subsequent amendments) and Location: CIF DUBAI, UNITED ARAB EMIRATES (DXB)
-3.2 Buyer, Consignee, DXB: {BUYER_NAME}, {BUYER_ADDRESS}, {BUYER_REPRESENTED_BY}, {BUYER_TELEPHONE}, {BUYER_EMAIL}
+3.2 Buyer, Consignee, DXB: (Name, Address, Contact person, Contact number/s, Email address/s
 	
-3.3 Importing Customs Agent DXB: (Name, Address, Contact person, Contact number/s, Email address/s)
+3.3 Importing Customs Agent DXB: (Name, Address, Contact person, Contact number/s, Email address/s
 
 3.4 Transport Company UAE: (Name, Address, Contact person, Contact number/s, Email address/s) (on behalf of the Buyer)
 
@@ -232,7 +166,6 @@ Article. 13 – Taxes, Tariffs, and Duties
 Any applicable taxes, tariffs, and duties, whether present or imposed on the Concentrate or contained metal, or on the commercial documents relating thereto, arising in the jurisdiction of the discharge airport(s), shall be borne solely by the Buyer. The Buyer shall fully indemnify the Seller for any obligations related to these charges in the UAE for legally acceptable material content.
 Any applicable taxes, tariffs, and duties, whether present or imposed on the Au dory or contained Au, or on the commercial documents relating thereto, arising in the jurisdiction of the Dore’s production or export by the Seller or Seller’s supplier, shall be borne solely by the Seller. The Seller shall fully indemnify the Buyer accordingly.
 The Seller shall promptly provide any documents requested by the Buyer to assist in complying with the Buyer’s obligations related to import taxes, tariffs, duties, and licenses associated with the Dore.
-
 Article. 14 – Licenses
 The Seller or Export Agent must obtain, at its own risk and expense, any export licenses or other official authorizations and carry out all customs formalities necessary for the export of the dory from the country of origin.
 Where applicable, the Buyer shall obtain, at its own risk and expense, any import licenses or other official authorizations and carry out all customs formalities for the import of the dory. The Seller shall promptly provide any necessary documents requested by the Buyer that are proven to be necessary for obtaining the aforementioned licenses, authorizations, or customs formalities.
@@ -259,9 +192,11 @@ If a notice or other communication has been properly sent or delivered in accord
 • In the case of fax or email: It shall be deemed to have been received at the time of transmission or on the next consecutive business day if the time of transmission is outside normal business hours at the place of receipt.
 For the purposes of this Clause, all times shall be interpreted as local time in the place of deemed receipt. If the deemed receipt under this Clause occurs outside business hours (defined as 9:00 AM to 5:00 PM, Monday to Friday, excluding public holidays in the place of receipt), the notice shall be deemed to have been received when business next starts in that location.
 To prove delivery, it is sufficient to show that, if sent by email, no error message was received indicating that the email was not successfully delivered. If sent by facsimile, a delivery confirmation or successful transmission confirmation must be received.
+
 The provisions of this Clause shall not apply to the service of any process in any legal action or proceedings.
 Seller: : (Name, Address, Contact person, Contact number/s, Email address/s)
-Buyer: : (Name, Address, Contact person, Contact number/s, Email address/s)
+
+Buyer: : (Name, Address, Contact person, Contact number/s, Email address/s
 
 Article. 19 - Liability
 In no event shall either Party be liable for any indirect or consequential damages, including loss of profits, resulting from its performance or non-performance of its obligations under this Contract. This Clause shall survive the termination of this Contract for any reason.
@@ -326,13 +261,23 @@ Article. 32 - Signatures of the Parties
 We, the undersigned parties, hereby affirm under the international laws of perjury and fraud that the information provided herein is accurate and true. By affixing our signatures, initials, and seals to this agreement, we attest that our respective bank officers are fully aware of, have approved, and are ready to proceed with this transaction.
 IN WITNESS WHEREOF, the Parties have executed this Agreement as of the day and year bellow written.
 Signed for and on behalf of:
-SELLER: {SELLER_NAME}
-By: {SELLER_REPRESENTATIVE}
-Date: {DATE}
 
-BUYER: {BUYER_NAME}
-By: {BUYER_REPRESENTED_BY}
-Date: {DATE}
+SELLER:
+FONKEM XXX LLC-FZ
+
+
+_____________________________
+By: Xxxlefo Moshanyana - Partner
+Date: xx November 2025
+
+BUYER:
+XXX
+
+
+_____________________________
+By:
+Xxx Xxx -    Xxxx
+Date: xx November 2025
 
 EDT   (Electronic Document Transmissions)
 Shall be deemed valid and enforceable in respect of any provisions of this Contract. As applicable, this agreement shall be:
@@ -340,6 +285,12 @@ Shall be deemed valid and enforceable in respect of any provisions of this Contr
 Signatures (2001)
 2- ELECTRONIC COMMERCE AGREEMENT (ECE/TRADE/257, Geneva, May 2000) adopted by the United Nations Centre for Trade Facilitation and Electronic Business (UN/CEFACT).
 3- EDT documents shall be subject to European Community Directive No. 95/46/EEC, as applicable. Either Party may request hard copy of any document that has been previously transmitted by electronic means provided however, that any such request shall in no manner delay the parties from performing their respective obligations and duties under EDT instruments.
+
+
+
+
+
+
 
 FINANCIER’S CLIENT INFORMATION 
 COMPANY NAME:		
@@ -360,69 +311,24 @@ BANK OFFICER’S EMAIL:
 BANK’S TELEPHONE:	
 
 AFFIRMATION:
-I, {BUYER_NAME} HEREBY SWEAR UNDER PENALTY OF PERJURY, THAT THE INFORMATION PROVIDED IS BOTH TRUE AND ACCURATE. I AM THE SIGNATORY ON THE AFOREMENTIONED BANK ACCOUNT. ALL MONIES ENGAGED IN THIS TRANSACTION ARE DERIVED FROM NON-CRIMINAL ORIGIN AND ARE GOOD, CLEAN AND CLEARED. THE ORIGIN OF FUNDS ARE IN COMPLIANCE WITH ANTI-MONEY-LAUNDERING POLICIES AS SET FORTH BY THE FINANCIAL ACTION TASK FORCE (FATF) 6/01
-AGREED AND SIGN THIS ________ , {DATE}
+I, Xxx Xxx HEREBY SWEAR UNDER PENALTY OF PERJURY, THAT THE INFORMATION PROVIDED IS BOTH TRUE AND ACCURATE. I AM THE SIGNATORY ON THE AFOREMENTIONED BANK ACCOUNT. ALL MONIES ENGAGED IN THIS TRANSACTION ARE DERIVED FROM NON-CRIMINAL ORIGIN AND ARE GOOD, CLEAN AND CLEARED. THE ORIGIN OF FUNDS ARE IN COMPLIANCE WITH ANTI-MONEY-LAUNDERING POLICIES AS SET FORTH BY THE FINANCIAL ACTION TASK FORCE (FATF) 6/01
+AGREED AND SIGN THIS ________ , XX November 2025
 
-NAME: {BUYER_NAME}
+____________________________________________________
+NAME: 
 TITLE: 
 PASSPORT #:			 
-NATIONALITY: {BUYER_COUNTRY}
+NATIONALITY: 
 ISSUING DATE:		
 EXPIRY DATE:
 
 ATTACHMENT “A”
 Seller’s License 
 
+
+
 ATTACHMENT “B”
 Buyer’s License
 
+
 ***END OF DOCUMENT***
-`;
-
-export const SpaDocument = ({ variables }: { variables: SpaVariables }) => {
-    let content = SPA_TEMPLATE_TEXT;
-
-    // Replace all placeholders using a safer method
-    Object.keys(variables).forEach((key) => {
-        const val = (variables as any)[key] || `[${key} Pending]`;
-        const regex = new RegExp(`{${key}}`, 'g');
-        content = content.replace(regex, val.toString());
-    });
-
-    const lines = content.split('\n');
-
-    return (
-        <Document>
-            <Page size="A4" style={styles.page}>
-                {lines.map((line, i) => {
-                    const trimmed = line.trim();
-                    if (!trimmed) return <View key={i} style={{ height: 4 }} />;
-
-                    const isTitle = (i < 5 || trimmed === trimmed.toUpperCase()) && trimmed.length > 10;
-                    const isArticle = trimmed.startsWith('Article') || trimmed.startsWith('Art.') || trimmed.startsWith('SELLER:') || trimmed.startsWith('BUYER:');
-
-                    return (
-                        <Text
-                            key={i}
-                            style={[
-                                styles.text,
-                                (isTitle || isArticle) ? { fontWeight: 'bold' } : {},
-                                isTitle ? { textAlign: 'center', marginBottom: 6, fontSize: 10 } : {}
-                            ]}
-                        >
-                            {line}
-                        </Text>
-                    );
-                })}
-                <View style={{ marginTop: 20 }}>
-                    <Text style={{ fontSize: 6, color: '#999' }}>Transaction Reference: {variables.DEAL_ID}</Text>
-                </View>
-            </Page>
-        </Document>
-    );
-};
-
-export const generateSpaPdfUrl = async (variables: SpaVariables): Promise<string> => {
-    const blob = await pdf(<SpaDocument variables={variables} />).toBlob();
-    return URL.createObjectURL(blob);
-};

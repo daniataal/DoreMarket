@@ -31,6 +31,19 @@ export default async function Dashboard() {
         return deal;
     });
 
+    // Get Seller Configuration for SPA
+    const sellerConfig = {
+        companyName: process.env.SELLER_COMPANY_NAME || "FONKEM GROUP LLC-FZ",
+        address: process.env.SELLER_ADDRESS || "Meydan Grandstand, Dubai, UAE",
+        tradeLicense: process.env.SELLER_TRADE_LICENSE || "2537157.01",
+        representative: process.env.SELLER_REPRESENTATIVE || "Thalefo Moshanyana",
+        passportNumber: process.env.SELLER_PASSPORT_NUMBER || "A11611955",
+        passportExpiry: process.env.SELLER_PASSPORT_EXPIRY || "13/11/2034",
+        country: process.env.SELLER_COUNTRY || "UAE",
+        telephone: process.env.SELLER_TELEPHONE || "(+27) 063 638 9245",
+        email: process.env.SELLER_EMAIL || ""
+    };
+
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
             {/* Ambient Lighting Engine */}
@@ -75,7 +88,13 @@ export default async function Dashboard() {
                             </div>
                         ) : (
                             deals.map((deal) => (
-                                <ClientBuyButton key={deal.id} deal={deal} userBalance={walletData.balance} />
+                                <ClientBuyButton
+                                    key={deal.id}
+                                    deal={deal}
+                                    userBalance={walletData.balance}
+                                    sellerConfig={sellerConfig}
+                                    userInfo={session?.user}
+                                />
                             ))
                         )}
                     </div>
