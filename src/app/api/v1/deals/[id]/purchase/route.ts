@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { SpaGeneratorService } from "@/lib/services/spa-generator";
 
 export async function POST(
     request: NextRequest,
@@ -138,18 +139,32 @@ export async function POST(
                 const buyerName = buyerMatch ? buyerMatch[1].trim() : buyer.name || 'Buyer';
                 const sellerName = sellerMatch ? sellerMatch[1].trim() : deal.company;
 
+                // Generate personalized DRAFT SPA using the template
+                const agreementPath = await SpaGeneratorService.generateSpa({
+                    sellerName: sellerName,
+                    buyerName: buyerName,
+                    quantity: quantity,
+                    pricePerKg: finalPrice,
+                    totalCost: totalCost,
+                    commodity: deal.commodity,
+                    purity: `${(deal.purity * 100).toFixed(2)}%`,
+                    deliveryLocation: deliveryLocation || deal.deliveryLocation,
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                }, deal.id, session.user.id);
+
                 await prisma.agreement.create({
                     data: {
                         dealId: deal.id,
                         buyerName: buyerName,
                         sellerName: sellerName,
                         agreementDate: new Date(),
-                        terms: agreementTerms,
-                        status: 'SIGNED'
+                        terms: "Standard SPA Template applied (Draft). See attached document.",
+                        status: 'DRAFT',
+                        pdfUrl: agreementPath // This will point to the generated .docx file
                     }
                 });
 
-                console.log(`[Marketplace] Created signed SPA for deal ${deal.id}`);
+                console.log(`[Marketplace] Created DRAFT SPA for deal ${deal.id} at ${agreementPath}`);
             } catch (err: any) {
                 console.error(`[Marketplace] Failed to create agreement:`, err.message);
                 // Don't fail the purchase if agreement creation fails

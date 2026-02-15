@@ -132,7 +132,7 @@ SELLER: ${sellerName}
         setError('');
 
         try {
-            await onPurchase(quantity, fullDeliveryLocation, spaTerms);
+            await onPurchase(quantity, fullDeliveryLocation, "Standard SPA Template");
             onClose();
         } catch (err: any) {
             setError(err.message || 'Purchase failed. Please try again.');
@@ -327,15 +327,50 @@ SELLER: ${sellerName}
                                 Sale & Purchase Agreement (SPA)
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                This purchase requires a legally binding Sale and Purchase Agreement. The agreement will be automatically generated based on your purchase details.
+                                This purchase requires a legally binding Sale and Purchase Agreement. A standard draft agreement will be generated for your review.
                             </p>
 
                             <button
-                                onClick={() => setShowSPAPreview(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                onClick={async () => {
+                                    try {
+                                        setLoading(true);
+                                        const res = await fetch('/api/v1/spa/preview', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                dealId: deal.id,
+                                                quantity,
+                                                deliveryLocation: fullDeliveryLocation,
+                                                buyerName,
+                                                sellerName,
+                                                pricePerKg: deal.pricePerKg,
+                                                totalCost,
+                                                commodity: deal.commodity,
+                                                purity: `${(deal.purity || 0) * 100}%`
+                                            })
+                                        });
+                                        const data = await res.json();
+                                        if (data.previewUrl) {
+                                            // Create a temporary link to download
+                                            const link = document.createElement('a');
+                                            link.href = data.previewUrl;
+                                            link.download = `Draft_SPA_${deal.id}.docx`;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        setError('Failed to generate preview');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                disabled={loading}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                             >
                                 <Eye className="w-4 h-4" />
-                                Preview Agreement
+                                {loading ? 'Generating...' : 'Download Draft SPA With Your Details'}
                             </button>
 
                             <label className="flex items-start gap-3 cursor-pointer group mt-3">
@@ -351,7 +386,7 @@ SELLER: ${sellerName}
                                     </svg>
                                 </div>
                                 <span className="text-sm text-foreground group-hover:text-blue-600 transition-colors font-medium">
-                                    I have reviewed and agree to sign the Sale & Purchase Agreement
+                                    I have reviewed and agree to the Draft Sale & Purchase Agreement
                                 </span>
                             </label>
                         </div>
@@ -400,46 +435,11 @@ SELLER: ${sellerName}
                             disabled={!canPurchase || loading}
                             className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-primary/80 hover:to-primary text-white rounded-lg font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
-                            {loading ? 'Processing...' : 'Confirm Purchase & Sign SPA'}
+                            {loading ? 'Processing...' : 'Confirm Purchase & Generate SPA (Draft)'}
                         </button>
                     </div>
                 </div>
             </div>
-
-            {/* SPA Preview Modal */}
-            {showSPAPreview && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
-                    <div className="bg-card border border-border rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                        <div className="p-6 border-b border-border flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-blue-600" />
-                                <h3 className="text-xl font-bold text-foreground">Sale & Purchase Agreement Preview</h3>
-                            </div>
-                            <button
-                                onClick={() => setShowSPAPreview(false)}
-                                className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-6 bg-secondary/10">
-                            <div className="bg-white p-8 rounded-lg border border-border shadow-inner">
-                                <pre className="whitespace-pre-wrap font-mono text-xs text-gray-900 leading-relaxed">
-                                    {spaTerms}
-                                </pre>
-                            </div>
-                        </div>
-                        <div className="p-6 border-t border-border bg-card">
-                            <button
-                                onClick={() => setShowSPAPreview(false)}
-                                className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Close Preview
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }
