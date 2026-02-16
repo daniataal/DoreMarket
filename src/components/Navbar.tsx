@@ -16,7 +16,7 @@ export default function Navbar({ user }: { user: any }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity h-10 group">
                     <div className="flex items-center font-dancing text-4xl font-bold tracking-tight">
-                        <span className="text-primary">Dore</span>
+                        <span className="text-primary/90">Dore</span>
                         <span className="mx-2 text-white/30">&</span>
                         <span className="text-white">Market</span>
                     </div>
