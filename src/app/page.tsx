@@ -4,11 +4,10 @@ export default function LandingPage() {
     return (
         <div className="flex flex-col min-h-screen bg-background text-foreground">
             <header className="px-6 lg:px-8 h-16 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-2 group">
-                    <div className="px-2 h-8 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20 group-hover:rotate-6 transition-transform">
-                        <span className="text-primary font-serif font-black text-xs">Dore & Market</span>
-                    </div>
-                    <span className="text-2xl font-dancing font-bold leading-none text-primary">Dore & Market</span>
+                <div className="flex items-center font-dancing text-3xl font-bold tracking-tight group cursor-default">
+                    <span className="text-primary">Dore</span>
+                    <span className="mx-2 text-white/30">&</span>
+                    <span className="text-white">Market</span>
                 </div>
                 <nav className="flex gap-4">
                     <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">

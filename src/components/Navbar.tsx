@@ -14,14 +14,13 @@ export default function Navbar({ user }: { user: any }) {
     return (
         <nav className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div className="flex items-center h-16">
-                    <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity h-10 group">
-                        <div className="px-3 h-10 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shrink-0 group-hover:scale-110 transition-transform">
-                            <span className="text-primary font-serif font-black text-sm leading-none whitespace-nowrap">Dore & Market</span>
-                        </div>
-                        <span className="text-2xl font-dancing font-bold text-primary tracking-normal leading-none pr-1">Dore & Market</span>
-                    </Link>
-                </div>
+                <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity h-10 group">
+                    <div className="flex items-center font-dancing text-4xl font-bold tracking-tight">
+                        <span className="text-primary">Dore</span>
+                        <span className="mx-2 text-white/30">&</span>
+                        <span className="text-white">Market</span>
+                    </div>
+                </Link>
 
                 <div className="flex items-center gap-6 h-16">
                     <div className="hidden lg:flex flex-col text-right border-r border-white/10 pr-6 h-10 justify-center">
