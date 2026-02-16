@@ -15,17 +15,17 @@ export default function Navbar({ user }: { user: any }) {
         <nav className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div className="flex items-center h-16">
-                    <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity h-10">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 border border-white/10 shrink-0">
-                            <span className="text-white font-black text-xl leading-none">M</span>
+                    <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity h-10 group">
+                        <div className="px-3 h-10 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shrink-0 group-hover:scale-110 transition-transform">
+                            <span className="text-primary font-serif font-black text-sm leading-none whitespace-nowrap">Dore & Market</span>
                         </div>
-                        <span className="text-xl font-black text-white uppercase tracking-wider leading-none">Marketplace</span>
+                        <span className="text-2xl font-dancing font-bold text-primary tracking-normal leading-none pr-1">Dore & Market</span>
                     </Link>
                 </div>
 
                 <div className="flex items-center gap-6 h-16">
                     <div className="hidden lg:flex flex-col text-right border-r border-white/10 pr-6 h-10 justify-center">
-                        <span className="text-[13px] font-black text-white leading-none mb-1.5">{user?.name || "Trader"}</span>
+                        <span className="text-[13px] font-black text-white capitalize leading-none mb-1.5">{user?.name || "Trader"}</span>
                         <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">{user?.email}</span>
                     </div>
 

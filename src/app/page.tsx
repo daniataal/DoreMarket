@@ -4,11 +4,11 @@ export default function LandingPage() {
     return (
         <div className="flex flex-col min-h-screen bg-background text-foreground">
             <header className="px-6 lg:px-8 h-16 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold">M</span>
+                <div className="flex items-center gap-2 group">
+                    <div className="px-2 h-8 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20 group-hover:rotate-6 transition-transform">
+                        <span className="text-primary font-serif font-black text-xs">Dore & Market</span>
                     </div>
-                    <span className="text-xl font-bold">Marketplace</span>
+                    <span className="text-2xl font-dancing font-bold leading-none text-primary">Dore & Market</span>
                 </div>
                 <nav className="flex gap-4">
                     <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">
@@ -72,7 +72,7 @@ export default function LandingPage() {
             </main>
 
             <footer className="py-8 border-t border-white/5 text-center text-sm text-muted-foreground">
-                © 2026 Gold Marketplace Platform. All rights reserved.
+                © 2026 DoreMarket Platform. All rights reserved.
             </footer>
         </div>
     )

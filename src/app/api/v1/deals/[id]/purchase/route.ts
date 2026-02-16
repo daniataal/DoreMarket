@@ -143,9 +143,9 @@ export async function POST(
                 }
             });
 
-            console.log(`[Marketplace] Created pending export for purchase ${result.purchase.id}. Awaiting admin review.`);
+            console.log(`[DoreMarket] Created pending export for purchase ${result.purchase.id}. Awaiting admin review.`);
         } catch (err: any) {
-            console.error(`[Marketplace] Failed to create pending export:`, err.message);
+            console.error(`[DoreMarket] Failed to create pending export:`, err.message);
         }
 
         // 7. Create Agreement (SPA) record if terms provided
@@ -202,9 +202,9 @@ export async function POST(
                     }
                 });
 
-                console.log(`[Marketplace] Created and SIGNED Agreement record for deal ${deal.id}`);
+                console.log(`[DoreMarket] Created and SIGNED Agreement record for deal ${deal.id}`);
             } catch (err: any) {
-                console.error(`[Marketplace] Failed to create agreement record:`, err.message);
+                console.error(`[DoreMarket] Failed to create agreement record:`, err.message);
             }
         }
 
