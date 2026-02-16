@@ -3,12 +3,12 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: marketplace_postgres
+    container_name: DoreMarket_db
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: marketplace_password
-      POSTGRES_DB: marketplace_db
+      POSTGRES_DB: DoreMarket_db
     ports:
       - "5433:5432" # Use 5433 to avoid conflict if on same host as other DBs
     volumes:
@@ -22,7 +22,7 @@ services:
   app:
     # Uses the pre-built image from Docker Hub registry
     image: ${DOCKER_IMAGE_NAME:-myuser/marketplace-platform}:latest
-    container_name: marketplace_app
+    container_name: DoreMarket_app
     restart: always
     # Add DNS servers to fix external API resolution
     dns:
