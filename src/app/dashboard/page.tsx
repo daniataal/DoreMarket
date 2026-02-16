@@ -61,27 +61,27 @@ export default async function Dashboard() {
                 </div>
 
                 {/* Secondary Stats Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="md:col-span-3">
                         <MarketIntelligence currentPrice={livePrice} />
                     </div>
 
-                    <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center space-y-4 relative overflow-hidden group">
+                    <div className="md:col-span-1 bg-card/10 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                         <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
 
-                        <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500">
-                            <span className="text-2xl">💎</span>
+                        <div className="p-4 rounded-2xl bg-primary/10 text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500 shadow-2xl">
+                            <span className="text-3xl">💎</span>
                         </div>
 
                         <div className="space-y-1">
-                            <p className="text-4xl font-black text-white tabular-nums tracking-tighter shadow-primary/20 drop-shadow-sm">{deals.length}</p>
-                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Active Listings</p>
+                            <p className="text-5xl font-black text-white tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{deals.length}</p>
+                            <p className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em]">Active Listings</p>
                         </div>
 
                         <div className="pt-2">
-                            <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Market Open</span>
+                            <div className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
+                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Market Open</span>
                             </div>
                         </div>
                     </div>

@@ -1,36 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { depositFunds, withdrawFunds } from '@/actions/wallet';
 import { Plus, Minus, X, CreditCard, Banknote } from 'lucide-react';
 
 export function WalletActions() {
     const [isDepositOpen, setIsDepositOpen] = useState(false);
-    const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
-        <div className="mt-6">
+        <>
             <button
                 onClick={() => setIsDepositOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-semibold transition-all shadow-lg active:scale-95 border border-white/10"
+                className="flex items-center gap-3 px-6 py-3 sm:py-4 bg-white/5 hover:bg-white/10 text-white rounded-[1.5rem] font-bold text-sm transition-all active:scale-95 border border-white/10 group/btn"
             >
-                <div className="flex gap-1">
-                    <div className="p-1 bg-primary/20 rounded-full text-primary">
+                <div className="flex -space-x-2">
+                    <div className="p-1.5 bg-primary/20 rounded-full text-primary border border-primary/20 group-hover/btn:rotate-12 transition-transform">
                         <Plus className="w-3 h-3" />
                     </div>
-                    <div className="p-1 bg-secondary/20 rounded-full text-secondary-foreground">
+                    <div className="p-1.5 bg-amber-500/20 rounded-full text-amber-500 border border-amber-500/20 group-hover/btn:-rotate-12 transition-transform">
                         <Minus className="w-3 h-3" />
                     </div>
                 </div>
-                Manage Funds
+                <span className="uppercase tracking-widest text-[10px]">Manage Funds</span>
             </button>
 
-            <WalletModal
-                isOpen={isDepositOpen}
-                onClose={() => setIsDepositOpen(false)}
-                initialTab="deposit"
-            />
-        </div>
+            {mounted && createPortal(
+                <WalletModal
+                    isOpen={isDepositOpen}
+                    onClose={() => setIsDepositOpen(false)}
+                    initialTab="deposit"
+                />,
+                document.body
+            )}
+        </>
     );
 }
 
@@ -103,8 +111,8 @@ function WalletModal({ isOpen, onClose, initialTab }: { isOpen: boolean; onClose
                         <button
                             onClick={() => setActiveTab('deposit')}
                             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'deposit'
-                                    ? 'bg-zinc-800 text-white shadow-sm'
-                                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                                ? 'bg-zinc-800 text-white shadow-sm'
+                                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
                                 }`}
                         >
                             <CreditCard className="w-4 h-4" />
@@ -113,8 +121,8 @@ function WalletModal({ isOpen, onClose, initialTab }: { isOpen: boolean; onClose
                         <button
                             onClick={() => setActiveTab('withdraw')}
                             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'withdraw'
-                                    ? 'bg-zinc-800 text-white shadow-sm'
-                                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                                ? 'bg-zinc-800 text-white shadow-sm'
+                                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
                                 }`}
                         >
                             <Banknote className="w-4 h-4" />
