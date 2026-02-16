@@ -41,6 +41,8 @@ services:
 
     depends_on:
       - db
+    # Run migrations/seeding on start
+    command: sh -c "node node_modules/prisma/build/index.js db push --accept-data-loss && node scripts/seed-admin.js && node server.js"
     
   db:
     image: postgres:15-alpine

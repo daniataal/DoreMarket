@@ -52,8 +52,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    # Run migrations on start (using db push for schema sync without migrations)
-    command: sh -c "node node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss && node server.js"
+    # Run migrations on start (using db push for schema sync without migrations) and seed admin
+    command: sh -c "node node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss && node scripts/seed-admin.js && node server.js"
 
 
 volumes:
