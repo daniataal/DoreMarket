@@ -39,7 +39,8 @@ export default function CreateDealPage() {
         passportExpiry: '',
         country: '',
         telephone: '',
-        email: ''
+        email: '',
+        id: ''
     });
 
     // Derived Values
@@ -70,7 +71,8 @@ export default function CreateDealPage() {
             passportExpiry: seller.passportExpiry || '',
             country: seller.country || '',
             telephone: seller.telephone || '',
-            email: seller.email || ''
+            email: seller.email || '',
+            id: seller.id || ''
         });
         setStep('CREATE_DEAL');
     };
@@ -258,6 +260,7 @@ export default function CreateDealPage() {
                         <form action={dispatch} className="space-y-6">
                             {/* Hidden fields for calculated/derived values if needed, mostly for server action */}
                             <input type="hidden" name="marketPriceSnapshot" value={marketPrice} />
+                            <input type="hidden" name="sellerId" value={sellerDetails.id} />
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Basic Info */}
@@ -525,134 +528,132 @@ export default function CreateDealPage() {
                                     </div>
                                 </button>
 
-                                {showSellerDetails && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/50 mt-4 animate-in fade-in slide-in-from-top-1 duration-200">
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfOrigin">Country of Origin (Mined)</label>
-                                            <input
-                                                type="text"
-                                                name="cfOrigin"
-                                                id="cfOrigin"
-                                                value={sellerDetails.originCountry}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, originCountry: e.target.value })}
-                                                placeholder="e.g. Uganda"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfOriginPort">Port of Origin (Export)</label>
-                                            <input
-                                                type="text"
-                                                name="cfOriginPort"
-                                                id="cfOriginPort"
-                                                value={sellerDetails.originPort}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, originPort: e.target.value })}
-                                                placeholder="e.g. Kampala"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-
-                                        <div className="col-span-full">
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerAddress">Seller Address</label>
-                                            <input
-                                                type="text"
-                                                name="sellerAddress"
-                                                id="sellerAddress"
-                                                value={sellerDetails.address}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, address: e.target.value })}
-                                                placeholder="Business Address"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerTradeLicense">Trade License No.</label>
-                                            <input
-                                                type="text"
-                                                name="sellerTradeLicense"
-                                                id="sellerTradeLicense"
-                                                value={sellerDetails.tradeLicense}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, tradeLicense: e.target.value })}
-                                                placeholder="License Number"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerRepresentative">Representative Name</label>
-                                            <input
-                                                type="text"
-                                                name="sellerRepresentative"
-                                                id="sellerRepresentative"
-                                                value={sellerDetails.representative}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, representative: e.target.value })}
-                                                placeholder="Full Name"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerPassportNumber">Passport Number</label>
-                                            <input
-                                                type="text"
-                                                name="sellerPassportNumber"
-                                                id="sellerPassportNumber"
-                                                value={sellerDetails.passportNumber}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, passportNumber: e.target.value })}
-                                                placeholder="Passport No."
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerPassportExpiry">Passport Expiry</label>
-                                            <input
-                                                type="text"
-                                                name="sellerPassportExpiry"
-                                                id="sellerPassportExpiry"
-                                                value={sellerDetails.passportExpiry}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, passportExpiry: e.target.value })}
-                                                placeholder="DD/MM/YYYY"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerCountry">Seller Country</label>
-                                            <input
-                                                type="text"
-                                                name="sellerCountry"
-                                                id="sellerCountry"
-                                                value={sellerDetails.country}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, country: e.target.value })}
-                                                placeholder="Country"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerTelephone">Seller Phone</label>
-                                            <input
-                                                type="text"
-                                                name="sellerTelephone"
-                                                id="sellerTelephone"
-                                                value={sellerDetails.telephone}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, telephone: e.target.value })}
-                                                placeholder="+123..."
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
-                                        <div className="col-span-full">
-                                            <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerEmail">Seller Email</label>
-                                            <input
-                                                type="email"
-                                                name="sellerEmail"
-                                                id="sellerEmail"
-                                                value={sellerDetails.email}
-                                                onChange={(e) => setSellerDetails({ ...sellerDetails, email: e.target.value })}
-                                                placeholder="email@company.com"
-                                                className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
-                                            />
-                                        </div>
+                                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/50 mt-4 animate-in fade-in slide-in-from-top-1 duration-200 ${!showSellerDetails ? 'hidden' : ''}`}>
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfOrigin">Country of Origin (Mined)</label>
+                                        <input
+                                            type="text"
+                                            name="cfOrigin"
+                                            id="cfOrigin"
+                                            value={sellerDetails.originCountry}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, originCountry: e.target.value })}
+                                            placeholder="e.g. Uganda"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
                                     </div>
-                                )}
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfOriginPort">Port of Origin (Export)</label>
+                                        <input
+                                            type="text"
+                                            name="cfOriginPort"
+                                            id="cfOriginPort"
+                                            value={sellerDetails.originPort}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, originPort: e.target.value })}
+                                            placeholder="e.g. Kampala"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+
+                                    <div className="col-span-full">
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerAddress">Seller Address</label>
+                                        <input
+                                            type="text"
+                                            name="sellerAddress"
+                                            id="sellerAddress"
+                                            value={sellerDetails.address}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, address: e.target.value })}
+                                            placeholder="Business Address"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerTradeLicense">Trade License No.</label>
+                                        <input
+                                            type="text"
+                                            name="sellerTradeLicense"
+                                            id="sellerTradeLicense"
+                                            value={sellerDetails.tradeLicense}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, tradeLicense: e.target.value })}
+                                            placeholder="License Number"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerRepresentative">Representative Name</label>
+                                        <input
+                                            type="text"
+                                            name="sellerRepresentative"
+                                            id="sellerRepresentative"
+                                            value={sellerDetails.representative}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, representative: e.target.value })}
+                                            placeholder="Full Name"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerPassportNumber">Passport Number</label>
+                                        <input
+                                            type="text"
+                                            name="sellerPassportNumber"
+                                            id="sellerPassportNumber"
+                                            value={sellerDetails.passportNumber}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, passportNumber: e.target.value })}
+                                            placeholder="Passport No."
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerPassportExpiry">Passport Expiry</label>
+                                        <input
+                                            type="text"
+                                            name="sellerPassportExpiry"
+                                            id="sellerPassportExpiry"
+                                            value={sellerDetails.passportExpiry}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, passportExpiry: e.target.value })}
+                                            placeholder="DD/MM/YYYY"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerCountry">Seller Country</label>
+                                        <input
+                                            type="text"
+                                            name="sellerCountry"
+                                            id="sellerCountry"
+                                            value={sellerDetails.country}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, country: e.target.value })}
+                                            placeholder="Country"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerTelephone">Seller Phone</label>
+                                        <input
+                                            type="text"
+                                            name="sellerTelephone"
+                                            id="sellerTelephone"
+                                            value={sellerDetails.telephone}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, telephone: e.target.value })}
+                                            placeholder="+123..."
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                    <div className="col-span-full">
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerEmail">Seller Email</label>
+                                        <input
+                                            type="email"
+                                            name="sellerEmail"
+                                            id="sellerEmail"
+                                            value={sellerDetails.email}
+                                            onChange={(e) => setSellerDetails({ ...sellerDetails, email: e.target.value })}
+                                            placeholder="email@company.com"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="pt-4 border-t border-border">

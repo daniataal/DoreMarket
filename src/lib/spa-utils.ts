@@ -123,8 +123,8 @@ export function generateSpaVariables({
         // Deal Details
         AU_PURITY: `${((deal.purity || 0.9999) * 100).toFixed(2)}%`,
         AU_FINESSE: deal.purity && deal.purity >= 0.9999 ? "24 Carat" : "+23 Carats",
-        AU_ORIGIN: deal.cfOrigin || deal.origin || "Uganda",
-        AU_ORIGIN_PORT: deal.cfOriginPort || deal.originPort || "Kampala",
+        AU_ORIGIN: deal.cfOrigin || deal.origin || "Not Specified",
+        AU_ORIGIN_PORT: deal.cfOriginPort || deal.originPort || "Not Specified",
         AU_DELIVERY_PORT: getDeliveryPort(),
         AU_DESTINATION: fullDeliveryLocation,
         QUANTITY: quantity.toString(),

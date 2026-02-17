@@ -300,7 +300,7 @@ export async function createDeal(
     const cfTargetApy = parseFloat((formData.get("cfTargetApy") as string) || "12.5");
     const cfDuration = parseInt((formData.get("cfDuration") as string) || "12");
     const cfMinInvestment = parseFloat((formData.get("cfMinInvestment") as string) || "500");
-    const cfOrigin = (formData.get("cfOrigin") as string) || "Africa";
+    const cfOrigin = (formData.get("cfOrigin") as string) || "";
     const cfTransportMethod = (formData.get("cfTransportMethod") as string) || "Air Freight";
     const cfIcon = (formData.get("cfIcon") as string) || "gold-bar";
     const cfOriginPort = (formData.get("cfOriginPort") as string) || "Kampala";
@@ -381,6 +381,7 @@ export async function createDeal(
                 sellerCountry,
                 sellerTelephone,
                 sellerEmail,
+                sellerId: (formData.get("sellerId") as string) || null,
             },
         });
     } catch (error) {
@@ -509,6 +510,7 @@ export async function updateDeal(
                 sellerCountry,
                 sellerTelephone,
                 sellerEmail,
+                sellerId: (formData.get("sellerId") as string) || null,
             },
         });
 

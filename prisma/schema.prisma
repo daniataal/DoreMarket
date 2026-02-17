@@ -29,8 +29,8 @@ model Deal {
   cfTargetApy       Float       @default(12.5) // Target APY for investors
   cfDuration        Int         @default(12) // Campaign duration in months
   cfMinInvestment   Float       @default(500) // Minimum investment amount
-  cfOrigin          String      @default("Africa") // Origin location
-  cfOriginPort      String      @default("Kampala") // Origin Port
+  cfOrigin          String      @default("") // Origin location
+  cfOriginPort      String      @default("") // Origin Port
   cfTransportMethod String      @default("Air Freight") // Transport method
   cfIcon            String      @default("gold-bar") // Icon for crowdfunding listing
   
@@ -43,6 +43,9 @@ model Deal {
   sellerCountry         String?
   sellerTelephone       String?
   sellerEmail           String?
+  
+  sellerId          String?
+  seller            SellerIdentity? @relation(fields: [sellerId], references: [id])
   
   crowdfundingId    String?
   buyerId           String?
@@ -205,6 +208,7 @@ model SellerIdentity {
   country           String?
   telephone         String?
   email             String?
+  deals             Deal[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
