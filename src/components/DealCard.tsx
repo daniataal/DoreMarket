@@ -19,6 +19,12 @@ interface DealProps {
         origin?: string;
         cfOrigin?: string;
         originport?: string;
+        frequency?: string;
+        totalQuantity?: number;
+        contractDuration?: number;
+        extensionYears?: number;
+        totalValue?: number;
+        annualValue?: number;
     };
     onBuy: (deal: any) => void;
 }
@@ -29,7 +35,16 @@ export function DealCard({ deal, onBuy }: DealProps) {
 
     const availabilityPercent = (deal.availableQuantity / deal.quantity) * 100;
 
-    // Helper to format purity
+    const getUnitLabel = () => {
+        switch (deal.frequency) {
+            case 'WEEKLY': return 'kg / week';
+            case 'BIWEEKLY': return 'kg / 2 weeks';
+            case 'MONTHLY': return 'kg / month';
+            case 'QUARTERLY': return 'kg / quarter';
+            default: return 'kg';
+        }
+    };
+
     const getPurityLabel = () => {
         if (!deal.purity) return '';
         if (deal.type === 'BULLION') return '99.99% Pure';
@@ -52,6 +67,11 @@ export function DealCard({ deal, onBuy }: DealProps) {
                                 <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shadow-[0_0_10px_rgba(220,38,38,0.2)]">
                                     {deal.commodity}
                                 </div>
+                                {deal.frequency && deal.frequency !== 'SPOT' && (
+                                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase tracking-wider">
+                                        {deal.frequency}
+                                    </div>
+                                )}
                                 {deal.pricingModel === 'DYNAMIC' && (
                                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 animate-pulse">
                                         <Activity className="w-3 h-3" />
@@ -69,7 +89,7 @@ export function DealCard({ deal, onBuy }: DealProps) {
                                 ${finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                             </span>
                             <div className="flex items-center justify-end gap-2 text-sm">
-                                <span className="text-muted-foreground text-xs">per kg</span>
+                                <span className="text-muted-foreground text-xs">per {getUnitLabel()}</span>
                                 <span className="text-accent font-medium">-{deal.discount}%</span>
                             </div>
                         </div>
@@ -78,44 +98,73 @@ export function DealCard({ deal, onBuy }: DealProps) {
                     {/* Availability Bar */}
                     <div className="mb-4">
                         <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                            <span>Available: {deal.availableQuantity} kg / {deal.quantity} kg</span>
-                            <span>{availabilityPercent.toFixed(0)}%</span>
+                            <span>
+                                {deal.frequency === 'SPOT'
+                                    ? `Available: ${deal.availableQuantity} ${getUnitLabel()} / ${deal.quantity} ${getUnitLabel()}`
+                                    : `${deal.quantity} ${getUnitLabel()}`
+                                }
+                            </span>
+                            {deal.frequency === 'SPOT' && <span>{availabilityPercent.toFixed(0)}%</span>}
                         </div>
-                        <div className="w-full h-2 bg-secondary/50 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
-                                style={{ width: `${availabilityPercent}%` }}
-                            />
-                        </div>
+                        {deal.frequency === 'SPOT' && (
+                            <div className="w-full h-2 bg-secondary/50 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                                    style={{ width: `${availabilityPercent}%` }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-3 bg-secondary/30 rounded-lg border border-white/5">
-                            <span className="block text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Value</span>
-                            <div className="flex items-end gap-1">
-                                <span className="font-mono text-lg text-foreground truncate">
+                        <div className="p-3 bg-secondary/30 rounded-lg border border-white/5 flex flex-col justify-center">
+                            <span className="block text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                                {deal.frequency === 'SPOT' ? 'Total Value' : 'Periodic Value'}
+                            </span>
+                            <div className="flex flex-col">
+                                <span className="font-mono text-lg text-foreground truncate leading-none">
                                     ${(deal.quantity * finalPrice).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                 </span>
+                                {deal.frequency !== 'SPOT' && (
+                                    <span className="text-[10px] text-accent font-bold mt-1">
+                                        Annual: ${(deal.annualValue || (deal.totalQuantity || deal.quantity * 12) * finalPrice).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="p-3 bg-secondary/30 rounded-lg border border-white/5">
-                            <span className="block text-xs text-muted-foreground uppercase tracking-wider mb-1">Pricing Model</span>
-                            <span className="font-mono text-sm text-foreground flex items-center gap-1 h-7">
-                                {deal.pricingModel === 'DYNAMIC' ? 'Live LBMA' : 'Fixed Rate'}
+                            <span className="block text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                                {deal.frequency === 'SPOT' ? 'Pricing Model' : 'Annual Quantity'}
                             </span>
+                            <span className="font-mono text-sm text-foreground flex items-center gap-1 h-7">
+                                {deal.frequency === 'SPOT'
+                                    ? (deal.pricingModel === 'DYNAMIC' ? 'Live LBMA' : 'Fixed Rate')
+                                    : `${deal.totalQuantity?.toLocaleString() || (deal.quantity * (deal.frequency === 'WEEKLY' ? 52 : deal.frequency === 'BIWEEKLY' ? 26 : deal.frequency === 'MONTHLY' ? 12 : 4)).toLocaleString()} kg`
+                                }
+                            </span>
+                            {deal.frequency !== 'SPOT' && (
+                                <div className="text-[9px] text-muted-foreground mt-0.5 whitespace-nowrap opacity-70">
+                                    {deal.quantity}kg x {deal.frequency === 'WEEKLY' ? 52 : deal.frequency === 'BIWEEKLY' ? 26 : deal.frequency === 'MONTHLY' ? 12 : 4}
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Delivery & Incoterms */}
-                    <div className="flex gap-2 mb-6 mt-auto">
-                        <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-2 mb-6 mt-auto">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded text-[10px] text-muted-foreground">
                             <MapPin className="w-3 h-3" />
                             Origin: {deal.cfOrigin || deal.origin || 'Unknown'}
                         </div>
-                        <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded text-[10px] text-muted-foreground">
                             <FileText className="w-3 h-3" />
                             {deal.incoterms}
                         </div>
+                        {deal.frequency !== 'SPOT' && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[10px] text-primary font-bold">
+                                🗓️ {deal.contractDuration || 1} Year + {deal.extensionYears || 5}Y Rolls
+                            </div>
+                        )}
                     </div>
 
                     <button

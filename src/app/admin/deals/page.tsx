@@ -48,7 +48,12 @@ export default async function AdminDealsPage() {
                                     <tr key={deal.id} className="hover:bg-secondary/20 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-foreground">{deal.company}</div>
-                                            <div className="text-sm text-muted-foreground">{deal.commodity}</div>
+                                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                {deal.commodity}
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${deal.frequency === 'SPOT' ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+                                                    {deal.frequency || 'SPOT'}
+                                                </span>
+                                            </div>
                                             <div className="text-xs font-mono text-muted-foreground mt-1">{deal.externalId}</div>
                                         </td>
                                         <td className="px-6 py-4">

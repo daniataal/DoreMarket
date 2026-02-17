@@ -185,7 +185,11 @@ export async function POST(
                     AU_DESTINATION: deliveryLocation || deal.deliveryLocation,
                     QUANTITY: quantity.toString(),
                     PRICE: `$${deal.pricePerKg.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/kg`,
-                    DELIVERY_COUNTRY: "UAE" // Simplified or derived from location
+                    DELIVERY_COUNTRY: "UAE", // Simplified or derived from location
+                    DURATION: d.frequency === 'SPOT' ? "One-time" : `${d.contractDuration || 1} Year`,
+                    EXTENSIONS: d.frequency === 'SPOT' ? "None" : `${d.extensionYears || 5} Years Rolling`,
+                    TOTAL_QUANTITY: `${(d.totalQuantity || (d.frequency === 'SPOT' ? quantity : quantity * 12)).toLocaleString()} kg`,
+                    FREQUENCY: d.frequency || 'SPOT'
                 };
 
                 // Create Agreement record linked to Purchase

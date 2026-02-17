@@ -25,6 +25,10 @@ interface PurchaseModalProps {
         cfOriginPort?: string;
         incoterms?: string;
         productType?: string;
+        frequency?: string;
+        quantity: number;
+        totalQuantity?: number;
+        annualValue?: number;
     };
     userBalance: number;
     userInfo?: {
@@ -166,7 +170,12 @@ SELLER: ${sellerName}
     useEffect(() => {
         if (isOpen) {
             // Reset state when modal opens
-            setQuantity(Math.min(1, deal.availableQuantity));
+            // For periodic deals, quantity is fixed to the deal's per-period quantity
+            if (deal.frequency && deal.frequency !== 'SPOT') {
+                setQuantity(deal.quantity);
+            } else {
+                setQuantity(Math.min(1, deal.availableQuantity));
+            }
             setDeliveryLocation(deal.deliveryLocation || 'Dubai');
             setCustomLocation('');
             setRefinery('');
@@ -220,35 +229,59 @@ SELLER: ${sellerName}
                     <div className="p-6 space-y-6">
                         {/* Quantity Selection */}
                         <div>
-                            <label className="block text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-                                <Package className="w-4 h-4" />
-                                Quantity (kg)
+                            <label className="block text-sm font-medium text-foreground mb-3 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Package className="w-4 h-4" />
+                                    Quantity (kg)
+                                </div>
+                                {deal.frequency !== 'SPOT' && (
+                                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-600 px-2 py-0.5 rounded border border-amber-500/30 uppercase tracking-tighter">
+                                        Fixed Contract Size
+                                    </span>
+                                )}
                             </label>
-                            <div className="space-y-3">
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max={deal.availableQuantity}
-                                    step="0.1"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(parseFloat(e.target.value))}
-                                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
-                                />
-                                <div className="flex gap-3">
+                            {deal.frequency === 'SPOT' ? (
+                                <div className="space-y-3">
                                     <input
-                                        type="number"
+                                        type="range"
                                         min="1"
                                         max={deal.availableQuantity}
                                         step="0.1"
                                         value={quantity}
-                                        onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-                                        className="flex-1 px-4 py-3 bg-background border border-input rounded-lg text-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                                        onChange={(e) => setQuantity(parseFloat(e.target.value))}
+                                        className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
                                     />
-                                    <div className="px-4 py-3 bg-secondary/50 border border-border rounded-lg text-sm text-muted-foreground flex items-center">
-                                        Max: {deal.availableQuantity} kg
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={deal.availableQuantity}
+                                            step="0.1"
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
+                                            className="flex-1 px-4 py-3 bg-background border border-input rounded-lg text-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                        <div className="px-4 py-3 bg-secondary/50 border border-border rounded-lg text-sm text-muted-foreground flex items-center">
+                                            Max: {deal.availableQuantity} kg
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="relative">
+                                    <div className="flex items-center justify-between px-4 py-4 bg-secondary/30 border border-border rounded-xl">
+                                        <div className="flex flex-col">
+                                            <span className="text-2xl font-mono font-bold text-foreground">{deal.quantity} kg</span>
+                                            <span className="text-xs text-muted-foreground">Applied per {deal.frequency?.toLowerCase().replace('ly', '')} supply period</span>
+                                        </div>
+                                        <div className="p-2 bg-white/5 rounded-full">
+                                            <Package className="w-6 h-6 text-muted-foreground/50" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground mt-2 px-1 italic">
+                                        * Periodic contracts require commitment to the full quantity specified per shipment.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Delivery Location */}
@@ -390,11 +423,19 @@ SELLER: ${sellerName}
                                     <span className="font-mono text-foreground">{quantity} kg</span>
                                 </div>
                                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
-                                    <span className="text-foreground">Total Cost</span>
+                                    <span className="text-foreground">{deal.frequency === 'SPOT' ? 'Total Cost' : 'Periodic Cost'}</span>
                                     <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-mono">
                                         ${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                     </span>
                                 </div>
+                                {deal.frequency !== 'SPOT' && (
+                                    <div className="flex justify-between text-sm font-bold text-accent pt-1">
+                                        <span>Estimated Annual Total</span>
+                                        <span className="font-mono">
+                                            ${(totalCost * (deal.frequency === 'WEEKLY' ? 52 : deal.frequency === 'BIWEEKLY' ? 26 : deal.frequency === 'MONTHLY' ? 12 : 4)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

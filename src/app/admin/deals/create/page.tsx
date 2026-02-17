@@ -20,6 +20,7 @@ export default function CreateDealPage() {
     const [fixedPrice, setFixedPrice] = useState<number | ''>('');
     const [quantity, setQuantity] = useState<number | ''>('');
     const [incoterms, setIncoterms] = useState('CIF');
+    const [frequency, setFrequency] = useState('SPOT');
 
     // Market Data
     const [marketPrice, setMarketPrice] = useState(0);
@@ -47,6 +48,9 @@ export default function CreateDealPage() {
     const calculatedPrice = pricingModel === 'FIXED'
         ? (fixedPrice === '' ? 0 : fixedPrice)
         : (marketPrice * purity) * (1 - discount / 100);
+
+    const multipliers = { SPOT: 1, WEEKLY: 52, BIWEEKLY: 26, MONTHLY: 12, QUARTERLY: 4 };
+    const totalAnnualQuantity = typeof quantity === 'number' ? quantity * (multipliers[frequency as keyof typeof multipliers] || 1) : 0;
 
     // Fetch initial market price and sellers
     useEffect(() => {
@@ -347,6 +351,41 @@ export default function CreateDealPage() {
                                         placeholder="0.00"
                                     />
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="frequency">Deal Frequency</label>
+                                    <select
+                                        name="frequency"
+                                        id="frequency"
+                                        value={frequency}
+                                        onChange={(e) => setFrequency(e.target.value)}
+                                        className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                        <option value="SPOT">One-time Deal (Spot)</option>
+                                        <option value="WEEKLY">Weekly Supply</option>
+                                        <option value="BIWEEKLY">Bi-weekly Supply</option>
+                                        <option value="MONTHLY">Monthly Supply</option>
+                                        <option value="QUARTERLY">Quarterly Supply</option>
+                                    </select>
+                                    {frequency !== 'SPOT' && (
+                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                            <div className="text-xs font-bold text-primary flex justify-between items-center">
+                                                <span>Annual Commitment</span>
+                                                <span className="text-sm">{totalAnnualQuantity.toLocaleString()} kg / Year</span>
+                                            </div>
+                                            <div className="text-xs font-bold text-primary flex justify-between items-center mt-1">
+                                                <span>Estimated Annual Value</span>
+                                                <span className="text-sm">${(totalAnnualQuantity * (calculatedPrice || 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                            </div>
+                                            <div className="text-[10px] text-primary/70 mt-1 font-medium">
+                                                Breakdown: {quantity} kg x {multipliers[frequency as keyof typeof multipliers]} periods per year
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-primary/10">
+                                                * 1 Year Contract with 5 Years rolling extensions
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="h-px bg-border/50 my-6" />
@@ -386,7 +425,7 @@ export default function CreateDealPage() {
                                             id="purity"
                                             required
                                             min="0"
-                                            max="1"
+                                            max="0.9999"
                                             step="0.0001"
                                             value={purity}
                                             onChange={(e) => setPurity(parseFloat(e.target.value))}
@@ -706,7 +745,7 @@ export default function CreateDealPage() {
                                 )}
                                 <div className="flex justify-between items-end pt-2 border-t border-primary/20">
                                     <div>
-                                        <span className="block text-xs text-muted-foreground uppercase tracking-wider mb-1">Final Price</span>
+                                        <span className="block text-xs text-muted-foreground uppercase tracking-wider mb-1">Final Price (per kg)</span>
                                         <div className="flex items-center gap-2">
                                             {pricingModel === 'DYNAMIC' && (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-500 border border-blue-500/30">
@@ -727,10 +766,17 @@ export default function CreateDealPage() {
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-sm text-muted-foreground">Total Value ({quantity}kg)</span>
                                 </div>
-                                <div className="text-2xl font-mono font-bold text-foreground text-right relative">
-                                    ${(calculatedPrice * Number(quantity)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                    {pricingModel === 'DYNAMIC' && (
-                                        <span className="absolute -top-1 -right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                <div className="text-right flex flex-col items-end">
+                                    <div className="text-2xl font-mono font-bold text-foreground relative">
+                                        ${(calculatedPrice * Number(quantity)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        {pricingModel === 'DYNAMIC' && (
+                                            <span className="absolute -top-1 -right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                        )}
+                                    </div>
+                                    {frequency !== 'SPOT' && (
+                                        <div className="text-sm font-bold text-accent mt-1">
+                                            Annual: ${(totalAnnualQuantity * calculatedPrice).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </div>
                                     )}
                                 </div>
                             </div>

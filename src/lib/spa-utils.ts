@@ -29,6 +29,10 @@ export interface SpaVariables {
     PRICE: string;
     DEAL_ID: string;
     DELIVERY_COUNTRY: string;
+    DURATION: string;
+    EXTENSIONS: string;
+    TOTAL_QUANTITY: string;
+    FREQUENCY: string;
 }
 
 interface GenerateSpaParams {
@@ -129,6 +133,10 @@ export function generateSpaVariables({
         AU_DESTINATION: fullDeliveryLocation,
         QUANTITY: quantity.toString(),
         PRICE: `$${(deal.pricePerKg || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD/kg`,
-        DELIVERY_COUNTRY: getDeliveryCountry()
+        DELIVERY_COUNTRY: getDeliveryCountry(),
+        DURATION: deal.frequency === 'SPOT' ? "One-time" : `${deal.contractDuration || 1} Year${(deal.contractDuration || 1) > 1 ? 's' : ''}`,
+        EXTENSIONS: deal.frequency === 'SPOT' ? "None" : `${deal.extensionYears || 5} Years Rolling`,
+        TOTAL_QUANTITY: `${(deal.totalQuantity || quantity).toLocaleString()} kg`,
+        FREQUENCY: deal.frequency || 'SPOT'
     };
 }
