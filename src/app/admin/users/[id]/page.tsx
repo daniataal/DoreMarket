@@ -1,5 +1,5 @@
 import { getUserDetails } from "@/lib/actions";
-import { ArrowLeft, User, DollarSign, Shield, FileText, CheckCircle, XCircle, Clock, Ban } from "lucide-react";
+import { ArrowLeft, User, DollarSign, Shield, FileText, CheckCircle, XCircle, Clock, Ban, Building2 } from "lucide-react";
 import Link from "next/link";
 import { UserActions } from "@/components/admin/UserActions";
 import { KycActions } from "@/components/admin/KycActions";
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const user = await getUserDetails(id);
+    const user = await getUserDetails(id) as any;
 
     return (
         <div className="space-y-6">
@@ -91,16 +91,54 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                         <h2 className="font-semibold text-foreground">KYC Management</h2>
                     </div>
                     <div className="space-y-4">
-                        {user.kycDocuments ? (
-                            <div className="p-3 bg-secondary/30 rounded-lg border border-border/50 text-sm">
-                                <p className="text-muted-foreground mb-2">Documents Submitted:</p>
-                                <pre className="text-xs overflow-x-auto whitespace-pre-wrap text-foreground/80">
+                        <div className="space-y-3">
+                            {user.idPassportUrl ? (
+                                <a
+                                    href={user.idPassportUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50 text-sm hover:bg-secondary/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-primary" />
+                                        <span className="font-medium">ID / Passport</span>
+                                    </div>
+                                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">View Doc</span>
+                                </a>
+                            ) : (
+                                <div className="p-3 bg-secondary/10 rounded-lg border border-dashed border-border text-xs text-muted-foreground italic text-center">
+                                    No ID/Passport uploaded
+                                </div>
+                            )}
+
+                            {user.userType === 'COMPANY' && (
+                                user.companyDocUrl ? (
+                                    <a
+                                        href={user.companyDocUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/50 text-sm hover:bg-secondary/50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="w-4 h-4 text-primary" />
+                                            <span className="font-medium">Company Docs</span>
+                                        </div>
+                                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">View Doc</span>
+                                    </a>
+                                ) : (
+                                    <div className="p-3 bg-secondary/10 rounded-lg border border-dashed border-border text-xs text-muted-foreground italic text-center">
+                                        No company docs uploaded
+                                    </div>
+                                )
+                            )}
+                        </div>
+
+                        {user.kycDocuments && (
+                            <div className="p-3 bg-secondary/10 rounded-lg border border-border/50 text-[10px]">
+                                <p className="text-muted-foreground mb-1 uppercase tracking-wider font-bold">Raw Metadata:</p>
+                                <pre className="overflow-x-auto whitespace-pre-wrap text-foreground/70">
                                     {JSON.stringify(user.kycDocuments, null, 2)}
                                 </pre>
-                            </div>
-                        ) : (
-                            <div className="text-sm text-muted-foreground italic p-4 text-center border border-dashed border-border rounded-lg">
-                                No documents submitted
                             </div>
                         )}
 

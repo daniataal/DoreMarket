@@ -76,15 +76,20 @@ model User {
   notifications Notification[]
   
   // KYC details
+  userType      String    @default("INDIVIDUAL") // INDIVIDUAL, COMPANY
   kycStatus     String    @default("PENDING") // PENDING, SUBMITTED, APPROVED, REJECTED
   firstName     String?
   lastName      String?
+  companyName   String?
+  companyRegistration String?
   address       String?
   phoneNumber   String?
   passportNumber String?
   passportExpiry String? // ISO date string or similar
   nationality   String?
-  kycDocuments  Json?     // Store URLs or metadata for uploaded docs
+  idPassportUrl String?   // URL to uploaded ID/Passport
+  companyDocUrl String?   // URL to uploaded Company Doc
+  kycDocuments  Json?     // Store additional URLs or metadata for uploaded docs
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

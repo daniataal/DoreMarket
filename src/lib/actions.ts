@@ -93,37 +93,62 @@ export async function updateProfile(
     }
 
     const name = formData.get("name") as string;
+    const userType = formData.get("userType") as string;
     const firstName = formData.get("firstName") as string;
     const lastName = formData.get("lastName") as string;
+    const companyName = formData.get("companyName") as string;
+    const companyRegistration = formData.get("companyRegistration") as string;
     const address = formData.get("address") as string;
     const nationality = formData.get("nationality") as string;
     const passportNumber = formData.get("passportNumber") as string;
     const passportExpiry = formData.get("passportExpiry") as string;
     const phoneNumber = formData.get("phoneNumber") as string;
     const password = formData.get("password") as string;
+
+    // File uploads
+    const idPassportFile = formData.get("idPassportFile") as any;
+    const companyDocFile = formData.get("companyDocFile") as any;
+
     const currentEmail = session.user.email;
 
     try {
-        const data: {
-            name?: string;
-            firstName?: string;
-            lastName?: string;
-            address?: string;
-            phoneNumber?: string;
-            nationality?: string;
-            passportNumber?: string;
-            passportExpiry?: string;
-            password?: string
-        } = {};
+        const data: any = {};
 
         if (name) data.name = name;
+        if (userType) data.userType = userType;
         if (firstName) data.firstName = firstName;
         if (lastName) data.lastName = lastName;
+        if (companyName) data.companyName = companyName;
+        if (companyRegistration) data.companyRegistration = companyRegistration;
         if (address) data.address = address;
         if (phoneNumber) data.phoneNumber = phoneNumber;
         if (nationality) data.nationality = nationality;
         if (passportNumber) data.passportNumber = passportNumber;
         if (passportExpiry) data.passportExpiry = passportExpiry;
+
+        // Handle File Uploads
+        const uploadDir = path.join(process.cwd(), 'public/uploads/kyc');
+        await mkdir(uploadDir, { recursive: true });
+
+        if (idPassportFile && typeof idPassportFile === 'object' && idPassportFile.size > 0) {
+            const buffer = Buffer.from(await idPassportFile.arrayBuffer());
+            const filename = `id-${Date.now()}-${idPassportFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            await writeFile(path.join(uploadDir, filename), buffer);
+            data.idPassportUrl = `/uploads/kyc/${filename}`;
+        }
+
+        if (companyDocFile && typeof companyDocFile === 'object' && companyDocFile.size > 0) {
+            const buffer = Buffer.from(await companyDocFile.arrayBuffer());
+            const filename = `company-${Date.now()}-${companyDocFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+            await writeFile(path.join(uploadDir, filename), buffer);
+            data.companyDocUrl = `/uploads/kyc/${filename}`;
+        }
+
+        // If files were uploaded or key info changed, set status to SUBMITTED if currently PENDING
+        const currentUser = await prisma.user.findUnique({ where: { email: currentEmail } });
+        if (currentUser?.kycStatus === 'PENDING' && (data.idPassportUrl || data.passportNumber)) {
+            data.kycStatus = 'SUBMITTED';
+        }
 
         if (password && password.length > 0) {
             if (password.length < 6) return "Password must be at least 6 characters";
@@ -140,7 +165,7 @@ export async function updateProfile(
         });
 
         revalidatePath("/settings");
-        return "Profile updated successfully";
+        return "Profile and KYC data updated successfully";
     } catch (error) {
         console.error("Profile update error:", error);
         return "Failed to update profile";
