@@ -51,15 +51,18 @@ export async function POST(
                         email: true
                     }
                 },
-                deal: {
-                    select: {
-                        id: true,
-                        company: true,
-                        commodity: true
-                    }
-                }
+                deal: true
             }
         });
+
+        // If delivered and deal is periodic, trigger repush
+        if (status === 'DELIVERED') {
+            const { CrowdfundingSyncService } = await import("@/lib/services/crowdfunding-sync");
+            // Run in background / don't block response
+            CrowdfundingSyncService.repushPeriodicDeal(purchase.id).catch(err => {
+                console.error('[Admin] Failed to trigger periodic repush:', err);
+            });
+        }
 
         return NextResponse.json({
             success: true,
