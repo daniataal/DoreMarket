@@ -100,7 +100,7 @@ export class CrowdfundingSyncService {
 
             const lastPurchase = await prisma.purchase.findUnique({
                 where: { id: lastPurchaseId },
-                include: { deal: true }
+                include: { deal: true, agreement: true }
             });
 
             if (!lastPurchase) return;
@@ -132,6 +132,27 @@ export class CrowdfundingSyncService {
                     status: "CONFIRMED"
                 }
             });
+
+            // 3b. Replicate signed SPA for periodic deal
+            if ((lastPurchase as any).agreement) {
+                console.log(`[SyncService] Replicating signed SPA for next delivery of periodic deal ${d.id}`);
+                const prevAgreement = (lastPurchase as any).agreement;
+                await (prisma as any).agreement.create({
+                    data: {
+                        purchaseId: nextPurchase.id,
+                        buyerName: prevAgreement.buyerName,
+                        sellerName: prevAgreement.sellerName,
+                        agreementDate: new Date(),
+                        terms: prevAgreement.terms,
+                        spaData: {
+                            ...(prevAgreement.spaData as any),
+                            DATE: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        },
+                        status: 'SIGNED',
+                        pdfUrl: prevAgreement.pdfUrl
+                    }
+                });
+            }
 
             const exportData = {
                 purchaseId: nextPurchase.id,
