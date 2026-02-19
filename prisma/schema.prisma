@@ -39,6 +39,7 @@ model Deal {
   cfOriginPort      String      @default("") // Origin Port
   cfTransportMethod String      @default("Air Freight") // Transport method
   cfIcon            String      @default("gold-bar") // Icon for crowdfunding listing
+  autoSync          Boolean      @default(false)      // If true, periodic deals auto-push to crowdfunding
   
   // Seller attributes for SPA
   sellerAddress         String?
@@ -149,6 +150,20 @@ model Purchase {
   
   @@index([dealId])
   @@index([buyerId])
+}
+
+model SyncJob {
+  id        String   @id @default(uuid())
+  type      String   // CROWDFUNDING_POST, CROWDFUNDING_PATCH
+  payload   Json
+  status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  attempts  Int      @default(0)
+  maxAttempts Int    @default(5)
+  lastError String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 model Agreement {

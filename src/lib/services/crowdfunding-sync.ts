@@ -2,94 +2,100 @@ import { prisma } from "@/lib/prisma";
 
 export class CrowdfundingSyncService {
     /**
-     * Marks a shipment as ARRIVED in the crowdfunding platform
+     * Enqueues a sync job in the database
      */
-    static async syncDeliveryToCrowdfunding(purchaseId: string) {
+    static async enqueueJob(type: 'CROWDFUNDING_POST' | 'CROWDFUNDING_PATCH', payload: any) {
+        console.log(`[SyncService] Enqueueing job ${type}`);
+        return await prisma.syncJob.create({
+            data: {
+                type,
+                payload: payload as any,
+                status: 'PENDING'
+            }
+        });
+    }
+
+    /**
+     * Processing logic for individual jobs
+     */
+    static async processJob(jobId: string) {
+        const job = await prisma.syncJob.findUnique({ where: { id: jobId } });
+        if (!job || job.status === 'COMPLETED') return;
+
+        await prisma.syncJob.update({
+            where: { id: jobId },
+            data: { status: 'PROCESSING', attempts: { increment: 1 } }
+        });
+
         try {
             const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
-            console.log(`[CrowdfundingSync] Notifying crowdfunding of delivery for shipment ${purchaseId}`);
+            const method = job.type === 'CROWDFUNDING_POST' ? 'POST' : 'PATCH';
 
             const response = await fetch(CROWDFUNDING_API, {
-                method: "PATCH",
+                method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    shipmentId: purchaseId,
-                    status: "ARRIVED"
-                })
+                body: JSON.stringify(job.payload)
             });
 
             if (!response.ok) {
-                const text = await response.text();
-                console.error(`[CrowdfundingSync] Failed to sync delivery to crowdfunding: ${text}`);
-            } else {
-                console.log(`[CrowdfundingSync] Successfully marked shipment ${purchaseId} as ARRIVED in crowdfunding`);
+                const errorText = await response.text();
+                throw new Error(`API error (${response.status}): ${errorText}`);
             }
-        } catch (error) {
-            console.error('[CrowdfundingSync] Error in syncDeliveryToCrowdfunding:', error);
+
+            await prisma.syncJob.update({
+                where: { id: jobId },
+                data: { status: 'COMPLETED', updatedAt: new Date() }
+            });
+
+            console.log(`[SyncService] Job ${jobId} (${job.type}) completed successfully.`);
+        } catch (error: any) {
+            console.error(`[SyncService] Job ${jobId} failed:`, error.message);
+            const isFinalAttempt = job.attempts + 1 >= job.maxAttempts;
+            await prisma.syncJob.update({
+                where: { id: jobId },
+                data: {
+                    status: isFinalAttempt ? 'FAILED' : 'PENDING',
+                    lastError: error.message,
+                    updatedAt: new Date()
+                }
+            });
         }
     }
 
     /**
-     * Sends a purchase/shipment to the crowdfunding platform as a new investment opportunity
+     * Background worker trigger (can be called by a cron or manually)
      */
-    static async pushToCrowdfunding(data: {
-        purchaseId: string;
-        dealId: string;
-        cfType: string;
-        cfName: string;
-        cfIcon: string;
-        cfRisk: string;
-        cfTargetApy: number;
-        cfDuration: number;
-        cfMinInvestment: number;
-        cfAmountRequired: number;
-        cfDescription: string;
-        cfOrigin: string;
-        cfDestination: string;
-        cfTransportMethod: string;
-        cfMetalForm: string;
-        cfPurityPercent: number;
-    }) {
-        const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
-
-        const payload = {
-            type: data.cfType,
-            name: data.cfName,
-            icon: data.cfIcon,
-            risk: data.cfRisk,
-            targetApy: data.cfTargetApy,
-            duration: data.cfDuration,
-            minInvestment: data.cfMinInvestment,
-            amountRequired: data.cfAmountRequired,
-            description: data.cfDescription,
-            origin: data.cfOrigin,
-            destination: data.cfDestination,
-            transportMethod: data.cfTransportMethod,
-            metalForm: data.cfMetalForm,
-            purityPercent: data.cfPurityPercent,
-            shipmentId: data.purchaseId
-        };
-
-        const response = await fetch(CROWDFUNDING_API, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+    static async runWorker() {
+        const pendingJobs = await prisma.syncJob.findMany({
+            where: { status: 'PENDING' },
+            orderBy: { createdAt: 'asc' },
+            take: 10
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Crowdfunding API failure: ${errorText}`);
-        }
+        if (pendingJobs.length === 0) return;
 
-        return await response.json();
+        console.log(`[SyncService] Worker starting. Processing ${pendingJobs.length} jobs...`);
+        for (const job of pendingJobs) {
+            await this.processJob(job.id);
+        }
     }
 
     /**
-     * Re-pushes a periodic deal to the crowdfunding platform if the contract is still valid
+     * Marks a shipment as ARRIVED in the crowdfunding platform (via Queue)
+     */
+    static async syncDeliveryToCrowdfunding(purchaseId: string) {
+        const payload = { shipmentId: purchaseId, status: "ARRIVED" };
+        const job = await this.enqueueJob('CROWDFUNDING_PATCH', payload);
+        // Fire and forget processing (or wait for cron)
+        this.processJob(job.id).catch(e => console.error("Async job processing failed", e));
+    }
+
+    /**
+     * Re-pushes a periodic deal by either queueing a direct push or creating a pending export
      */
     static async repushPeriodicDeal(lastPurchaseId: string) {
         try {
-            // 1. Mark the current one as delivered
+            // 1. Sync current delivery
             await this.syncDeliveryToCrowdfunding(lastPurchaseId);
 
             const lastPurchase = await prisma.purchase.findUnique({
@@ -103,28 +109,18 @@ export class CrowdfundingSyncService {
 
             if (d.frequency === 'SPOT') return;
 
-            // 2. Contract Validation: Quantity check
+            // 2. Validation
             const allPurchases = await prisma.purchase.findMany({
                 where: { dealId: d.id, status: 'DELIVERED' }
             });
             const totalDelivered = allPurchases.reduce((acc, p) => acc + p.quantity, 0);
 
-            if (d.totalQuantity && totalDelivered >= d.totalQuantity) {
-                console.log(`[CrowdfundingSync] Deal ${d.id} has reached total contract quantity (${totalDelivered}/${d.totalQuantity}). Stopping auto-repush.`);
-                return;
-            }
-
-            // 3. Contract Validation: Time check
+            if (d.totalQuantity && totalDelivered >= d.totalQuantity) return;
             const expiryDate = new Date(d.createdAt);
             expiryDate.setFullYear(expiryDate.getFullYear() + (d.contractDuration || 1));
-            if (new Date() > expiryDate) {
-                console.log(`[CrowdfundingSync] Deal ${d.id} has reached contract duration expiry. Stopping auto-repush.`);
-                return;
-            }
+            if (new Date() > expiryDate) return;
 
-            console.log(`[CrowdfundingSync] Contract Valid (${totalDelivered}/${d.totalQuantity}kg delivered). Automating next tranche for deal ${d.id}`);
-
-            // 4. Create new Purchase record for the next cycle
+            // 3. Create next purchase
             const nextPurchase = await prisma.purchase.create({
                 data: {
                     dealId: d.id,
@@ -137,7 +133,6 @@ export class CrowdfundingSyncService {
                 }
             });
 
-            // 5. Build export data
             const exportData = {
                 purchaseId: nextPurchase.id,
                 dealId: d.id,
@@ -157,32 +152,51 @@ export class CrowdfundingSyncService {
                 cfPurityPercent: d.purity * 100
             };
 
-            // 6. Push DIRECTLY to Crowdfunding (Automatic scaling)
-            try {
-                const cfResult = await this.pushToCrowdfunding(exportData);
-                const cfId = cfResult?.data?.id || null;
+            // 4. Decision: Auto-Push or Manual
+            if (d.autoSync) {
+                console.log(`[SyncService] Deal ${d.id} has Auto-Sync enabled. Queueing direct push.`);
 
-                // Create a record in PendingExport but mark it as already EXPORTED
+                // Properly map payload for the Crowdfunding API
+                const apiPayload = {
+                    type: exportData.cfType,
+                    name: exportData.cfName,
+                    icon: exportData.cfIcon,
+                    risk: exportData.cfRisk,
+                    targetApy: exportData.cfTargetApy,
+                    duration: exportData.cfDuration,
+                    minInvestment: exportData.cfMinInvestment,
+                    amountRequired: exportData.cfAmountRequired,
+                    description: exportData.cfDescription,
+                    origin: exportData.cfOrigin,
+                    destination: exportData.cfDestination,
+                    transportMethod: exportData.cfTransportMethod,
+                    metalForm: exportData.cfMetalForm,
+                    purityPercent: exportData.cfPurityPercent,
+                    shipmentId: exportData.purchaseId
+                };
+
+                const job = await this.enqueueJob('CROWDFUNDING_POST', apiPayload);
+
+                // Track in PendingExport table for history
                 await (prisma as any).pendingExport.create({
                     data: {
                         ...exportData,
-                        status: "EXPORTED",
-                        crowdfundingId: cfId,
-                        exportedAt: new Date(),
+                        status: "EXPORTED", // We mark it exported because it's queued
                         reviewedBy: "SYSTEM-AUTO"
                     }
                 });
-                console.log(`[CrowdfundingSync] Successfully auto-pushed tranche ${nextPurchase.id} to crowdfunding.`);
-            } catch (error) {
-                console.error(`[CrowdfundingSync] Auto-push failed, creating PENDING export instead:`, error);
-                // Fallback to manual if API is down
+
+                // Immediate attempt
+                this.processJob(job.id).catch(e => console.error("Async job processing failed", e));
+            } else {
+                console.log(`[SyncService] Deal ${d.id} requires manual approval. Creating PENDING export.`);
                 await (prisma as any).pendingExport.create({
                     data: { ...exportData, status: "PENDING" }
                 });
             }
 
         } catch (error) {
-            console.error('[CrowdfundingSync] Error in repushPeriodicDeal:', error);
+            console.error('[SyncService] Error in repushPeriodicDeal:', error);
         }
     }
 }

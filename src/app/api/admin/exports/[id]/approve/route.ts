@@ -31,9 +31,6 @@ export async function POST(
             return NextResponse.json({ error: 'Export has already been processed' }, { status: 400 });
         }
 
-        // Export to crowdfunding platform
-        const CROWDFUNDING_API = process.env.CROWDFUNDING_API_URL || "http://localhost:3000/api/marketplace/commodities";
-
         const exportPayload = {
             type: pendingExport.cfType,
             name: pendingExport.cfName,
@@ -52,44 +49,30 @@ export async function POST(
             shipmentId: pendingExport.purchaseId
         };
 
-        console.log('[Admin] Exporting to crowdfunding:', exportPayload);
+        // Enqueue background job for export
+        const { CrowdfundingSyncService } = await import('@/lib/services/crowdfunding-sync');
+        const job = await CrowdfundingSyncService.enqueueJob('CROWDFUNDING_POST', exportPayload);
 
-        const response = await fetch(CROWDFUNDING_API, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(exportPayload)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[Admin] Crowdfunding export failed:', errorText);
-            return NextResponse.json({
-                error: 'Crowdfunding API error',
-                details: errorText
-            }, { status: 500 });
-        }
-
-        const crowdfundingData = await response.json();
-        const crowdfundingId = crowdfundingData?.data?.id || null;
-
-        // Update pending export status
+        // Update pending export status (Marked as EXPORTED because it's now in the queue)
         await prisma.pendingExport.update({
             where: { id: exportId },
             data: {
                 status: 'EXPORTED',
-                crowdfundingId: crowdfundingId,
-                exportedAt: new Date(),
                 reviewedBy: session.user.email || 'admin',
-                reviewedAt: new Date()
+                reviewedAt: new Date(),
+                exportedAt: new Date()
             }
         });
 
-        console.log(`[Admin] Successfully exported to crowdfunding. Campaign ID: ${crowdfundingId}`);
+        // Trigger immediate processing attempt
+        CrowdfundingSyncService.processJob(job.id).catch(err => {
+            console.error('[Admin] Immediate job processing failed:', err);
+        });
 
         return NextResponse.json({
             success: true,
-            crowdfundingId,
-            message: 'Export approved and sent to crowdfunding platform'
+            jobId: job.id,
+            message: 'Export approved and added to background sync queue'
         });
 
     } catch (error) {

@@ -427,6 +427,7 @@ export async function createDeal(
                 extensionYears,
                 totalValue,
                 annualValue,
+                autoSync: formData.get("autoSync") === 'true',
                 // Seller fields
                 sellerAddress,
                 sellerTradeLicense,
@@ -487,6 +488,7 @@ export async function updateDeal(
     const frequency = (formData.get("frequency") as string) || "SPOT";
     const contractDuration = parseInt(formData.get("contractDuration") as string) || (frequency === 'SPOT' ? 0 : 1);
     const extensionYears = parseInt(formData.get("extensionYears") as string) || 5;
+    const autoSync = formData.get("autoSync") === 'true';
 
     let totalQuantity = quantity;
     if (frequency !== 'SPOT') {
@@ -579,6 +581,7 @@ export async function updateDeal(
                 extensionYears,
                 totalValue,
                 annualValue,
+                autoSync,
                 // Update Seller fields
                 sellerAddress,
                 sellerTradeLicense,

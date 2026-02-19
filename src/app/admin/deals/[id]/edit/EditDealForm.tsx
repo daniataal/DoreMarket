@@ -31,6 +31,7 @@ export default function EditDealForm({ deal }: { deal: any }) {
     const [quantity, setQuantity] = useState(deal.quantity || 0);
     const [incoterms, setIncoterms] = useState(deal.incoterms || 'CIF');
     const [frequency, setFrequency] = useState(deal.frequency || 'SPOT');
+    const [autoSync, setAutoSync] = useState(deal.autoSync || false);
 
     const fetchPrice = async () => {
         const price = await getLiveGoldPrice();
@@ -168,21 +169,36 @@ export default function EditDealForm({ deal }: { deal: any }) {
                                         <option value="QUARTERLY">Quarterly Supply</option>
                                     </select>
                                     {frequency !== 'SPOT' && (
-                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                                            <div className="text-xs font-bold text-primary flex justify-between items-center">
-                                                <span>Annual Commitment</span>
-                                                <span className="text-sm">{totalAnnualQuantity.toLocaleString()} kg / Year</span>
+                                        <div className="mt-4 p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-0.5">
+                                                    <label className="text-sm font-bold text-primary flex items-center gap-2">
+                                                        <RefreshCw className="w-4 h-4" />
+                                                        Auto-Sync Tranches
+                                                    </label>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        Automatically push next tranches directly to Crowdfunding without manual approval.
+                                                    </p>
+                                                </div>
+                                                <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-secondary cursor-pointer" onClick={() => setAutoSync(!autoSync)}>
+                                                    <input type="hidden" name="autoSync" value={autoSync ? 'true' : 'false'} />
+                                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${autoSync ? 'translate-x-6 bg-primary' : 'translate-x-1'}`} />
+                                                </div>
                                             </div>
-                                            <div className="text-xs font-bold text-primary flex justify-between items-center mt-1">
-                                                <span>Estimated Annual Value</span>
-                                                <span className="text-sm">${(totalAnnualQuantity * (calculatedPrice || 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+
+                                            <div className="pt-4 border-t border-primary/10">
+                                                <div className="text-xs font-bold text-primary flex justify-between items-center">
+                                                    <span>Annual Commitment</span>
+                                                    <span className="text-sm">{totalAnnualQuantity.toLocaleString()} kg / Year</span>
+                                                </div>
+                                                <div className="text-xs font-bold text-primary flex justify-between items-center mt-1">
+                                                    <span>Estimated Annual Value</span>
+                                                    <span className="text-sm">${(totalAnnualQuantity * (calculatedPrice || 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                                <div className="text-[10px] text-primary/70 mt-1 font-medium">
+                                                    Breakdown: {quantity} kg x {multipliers[frequency as keyof typeof multipliers]} periods per year
+                                                </div>
                                             </div>
-                                            <div className="text-[10px] text-primary/70 mt-1 font-medium">
-                                                Breakdown: {quantity} kg x {multipliers[frequency as keyof typeof multipliers]} periods per year
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-primary/10 text-center">
-                                                * 1 Year Contract with 5 Years rolling extensions
-                                            </p>
                                         </div>
                                     )}
                                 </div>
