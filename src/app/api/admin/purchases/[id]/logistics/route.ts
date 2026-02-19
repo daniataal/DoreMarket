@@ -32,7 +32,16 @@ export async function POST(
             return NextResponse.json({ error: "Invalid status" }, { status: 400 });
         }
 
-        // Update purchase logistics
+        // 1. Get current purchase to check status change
+        const currentPurchase = await prisma.purchase.findUnique({
+            where: { id: purchaseId }
+        });
+
+        if (!currentPurchase) {
+            return NextResponse.json({ error: "Purchase not found" }, { status: 404 });
+        }
+
+        // 2. Update purchase logistics
         const purchase = await prisma.purchase.update({
             where: { id: purchaseId },
             data: {
@@ -51,15 +60,18 @@ export async function POST(
                         email: true
                     }
                 },
-                deal: {
-                    select: {
-                        id: true,
-                        company: true,
-                        commodity: true
-                    }
-                }
+                deal: true
             }
         });
+
+        // 3. If status JUST changed to DELIVERED and deal is periodic, trigger repush
+        if (status === 'DELIVERED' && currentPurchase.status !== 'DELIVERED') {
+            const { CrowdfundingSyncService } = await import("@/lib/services/crowdfunding-sync");
+            // Run in background
+            CrowdfundingSyncService.repushPeriodicDeal(purchase.id).catch(err => {
+                console.error('[Admin] Failed to trigger periodic repush:', err);
+            });
+        }
 
         return NextResponse.json({
             success: true,

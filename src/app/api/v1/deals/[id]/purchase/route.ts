@@ -121,23 +121,25 @@ export async function POST(
         // 6. Create Pending Export for Admin Review
         // Instead of immediately exporting, create a pending export record
         try {
+            const metalFormLabel = d.type === 'BULLION' ? 'Bullion' : 'Dore';
+
             await (prisma as any).pendingExport.create({
                 data: {
                     purchaseId: result.purchase.id,
                     dealId: deal.id,
-                    cfType: "Metals",
-                    cfName: `${d.company} - ${d.commodity} ${d.type} (${quantity}kg)`,
+                    cfType: d.commodity, // use commodity name (Gold/Silver) instead of hardcoded Metals
+                    cfName: `${d.company} - ${d.commodity} ${metalFormLabel} (${quantity}kg)`,
                     cfIcon: d.cfIcon,
                     cfRisk: d.cfRisk,
                     cfTargetApy: d.cfTargetApy,
                     cfDuration: d.cfDuration,
                     cfMinInvestment: d.cfMinInvestment,
                     cfAmountRequired: totalCost,
-                    cfDescription: `Secured ${d.commodity} ${d.type} purchase from ${d.company}. Purity: ${(d.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || d.deliveryLocation}.`,
+                    cfDescription: `Secured ${d.commodity} ${metalFormLabel} purchase from ${d.company}. Purity: ${(d.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || d.deliveryLocation}.`,
                     cfOrigin: d.cfOrigin,
                     cfDestination: deliveryLocation || d.deliveryLocation,
                     cfTransportMethod: d.cfTransportMethod,
-                    cfMetalForm: d.type,
+                    cfMetalForm: metalFormLabel,
                     cfPurityPercent: d.purity * 100,
                     status: "PENDING"
                 }
