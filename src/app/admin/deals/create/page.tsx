@@ -606,6 +606,32 @@ export default function CreateDealPage() {
                                     </div>
 
                                     <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfType">Crowdfunding Type</label>
+                                        <input
+                                            type="text"
+                                            name="cfType"
+                                            id="cfType"
+                                            defaultValue="Metals"
+                                            placeholder="e.g. Metals, Commodities"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="cfIcon">Crowdfunding Icon</label>
+                                        <select
+                                            name="cfIcon"
+                                            id="cfIcon"
+                                            defaultValue="gold-bar"
+                                            className="w-full p-3 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none appearance-none"
+                                        >
+                                            <option value="gold-bar">Gold Bar</option>
+                                            <option value="coins">Coins</option>
+                                            <option value="factory">Factory/Dore</option>
+                                            <option value="ship">Ship/Logistics</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
                                         <label className="block text-sm font-medium text-muted-foreground mb-1" htmlFor="sellerTradeLicense">Trade License No.</label>
                                         <input
                                             type="text"

@@ -21,6 +21,7 @@ type ExportData = {
     cfTransportMethod: string;
     cfMetalForm: string;
     cfPurityPercent: number;
+    cfFrequency: string;
     status: string;
     crowdfundingId?: string | null;
     reviewedBy?: string | null;
@@ -383,6 +384,25 @@ export default function ExportReviewModal({
                                         </select>
                                     ) : (
                                         <p className="text-foreground p-2">{formData.cfTransportMethod}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-muted-foreground mb-1">Deal Frequency</label>
+                                    {isEditing ? (
+                                        <select
+                                            value={formData.cfFrequency}
+                                            onChange={(e) => setFormData({ ...formData, cfFrequency: e.target.value })}
+                                            className="w-full p-2 bg-secondary/30 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                        >
+                                            <option value="SPOT">SPOT</option>
+                                            <option value="WEEKLY">WEEKLY</option>
+                                            <option value="BIWEEKLY">BIWEEKLY</option>
+                                            <option value="MONTHLY">MONTHLY</option>
+                                            <option value="QUARTERLY">QUARTERLY</option>
+                                        </select>
+                                    ) : (
+                                        <p className="text-foreground p-2 font-bold text-accent">{formData.cfFrequency}</p>
                                     )}
                                 </div>
 

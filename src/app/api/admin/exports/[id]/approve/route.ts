@@ -49,6 +49,7 @@ export async function POST(
             transportMethod: pendingExport.cfTransportMethod,
             metalForm: pendingExport.cfMetalForm,
             purityPercent: pendingExport.cfPurityPercent,
+            frequency: (pendingExport as any).cfFrequency || "SPOT",
             shipmentId: pendingExport.purchaseId
         };
 

@@ -338,6 +338,7 @@ export async function createDeal(
     const cfOriginPort = (formData.get("cfOriginPort") as string) || "Kampala";
     const incoterms = (formData.get("incoterms") as string) || "CIF";
     const frequency = (formData.get("frequency") as string) || "SPOT";
+    const cfType = (formData.get("cfType") as string) || "Metals";
     const contractDuration = parseInt(formData.get("contractDuration") as string) || (frequency === 'SPOT' ? 0 : 1);
     const extensionYears = parseInt(formData.get("extensionYears") as string) || 5;
 
@@ -437,6 +438,7 @@ export async function createDeal(
                 sellerTelephone,
                 sellerEmail,
                 sellerId: (formData.get("sellerId") as string) || null,
+                cfType,
             },
         });
     } catch (error) {
@@ -485,6 +487,7 @@ export async function updateDeal(
     const discount = parseFloat(formData.get("discount") as string);
     const incoterms = (formData.get("incoterms") as string) || "CIF";
     const frequency = (formData.get("frequency") as string) || "SPOT";
+    const cfType = (formData.get("cfType") as string) || "Metals";
     const contractDuration = parseInt(formData.get("contractDuration") as string) || (frequency === 'SPOT' ? 0 : 1);
     const extensionYears = parseInt(formData.get("extensionYears") as string) || 5;
 
@@ -589,6 +592,7 @@ export async function updateDeal(
                 sellerTelephone,
                 sellerEmail,
                 sellerId: (formData.get("sellerId") as string) || null,
+                cfType,
             },
         });
 

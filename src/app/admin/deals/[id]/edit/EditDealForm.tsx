@@ -333,6 +333,32 @@ export default function EditDealForm({ deal }: { deal: any }) {
                                     />
                                 </div>
 
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-muted-foreground" htmlFor="cfType">Crowdfunding Type</label>
+                                    <input
+                                        type="text"
+                                        name="cfType"
+                                        id="cfType"
+                                        defaultValue={deal.cfType || "Metals"}
+                                        placeholder="e.g. Metals, Commodities"
+                                        className="w-full p-3 bg-secondary/50 rounded-lg text-foreground border border-transparent focus:border-primary outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-muted-foreground" htmlFor="cfIcon">Crowdfunding Icon</label>
+                                    <select
+                                        name="cfIcon"
+                                        id="cfIcon"
+                                        defaultValue={deal.cfIcon || "gold-bar"}
+                                        className="w-full p-3 bg-secondary/50 rounded-lg text-foreground border border-transparent focus:border-primary outline-none appearance-none"
+                                    >
+                                        <option value="gold-bar">Gold Bar</option>
+                                        <option value="coins">Coins</option>
+                                        <option value="factory">Factory/Dore</option>
+                                        <option value="ship">Ship/Logistics</option>
+                                    </select>
+                                </div>
+
                                 <div className="col-span-full">
                                     <label className="block text-sm font-medium mb-2 text-muted-foreground">Seller Address</label>
                                     <input

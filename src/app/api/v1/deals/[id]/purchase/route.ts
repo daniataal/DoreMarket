@@ -125,20 +125,21 @@ export async function POST(
                 data: {
                     purchaseId: result.purchase.id,
                     dealId: deal.id,
-                    cfType: "Metals",
-                    cfName: `${d.company} - ${d.commodity} ${d.type} (${quantity}kg)`,
+                    cfType: d.cfType || "Metals",
+                    cfName: `${d.company} - ${d.commodity} ${d.type} ${d.frequency !== 'SPOT' ? `(${d.frequency})` : ''} - ${quantity}kg`,
                     cfIcon: d.cfIcon,
                     cfRisk: d.cfRisk,
                     cfTargetApy: d.cfTargetApy,
                     cfDuration: d.cfDuration,
                     cfMinInvestment: d.cfMinInvestment,
                     cfAmountRequired: totalCost,
-                    cfDescription: `Secured ${d.commodity} ${d.type} purchase from ${d.company}. Purity: ${(d.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Delivery: ${deliveryLocation || d.deliveryLocation}.`,
+                    cfDescription: `Secured ${d.commodity} ${d.type} ${d.frequency === 'SPOT' ? 'Spot Purchase' : `${d.frequency} Periodic Purchase`} from ${d.company}. Purity: ${(d.purity * 100).toFixed(2)}%. Quantity: ${quantity}kg. Frequency: ${d.frequency}. Delivery: ${deliveryLocation || d.deliveryLocation}.`,
                     cfOrigin: d.cfOrigin,
                     cfDestination: deliveryLocation || d.deliveryLocation,
                     cfTransportMethod: d.cfTransportMethod,
                     cfMetalForm: d.type,
                     cfPurityPercent: d.purity * 100,
+                    cfFrequency: d.frequency || "SPOT",
                     status: "PENDING"
                 }
             });

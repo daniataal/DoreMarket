@@ -8,103 +8,96 @@ datasource db {
 }
 
 model Deal {
-  id                String      @id @default(uuid())
-  externalId        String      @unique
-  company           String
-  commodity         String
-  quantity          Float
-  availableQuantity Float       @default(0) @map("available_quantity")
-  pricePerKg        Float
-  discount          Float
-  status            String      @default("OPEN") // OPEN, CLOSED, EXPORTED
-  deliveryLocation  String      @default("Dubai")
-  incoterms         String      @default("CIF") // CIF, FOB, EXW, etc.
-  type              String      @default("BULLION") // BULLION, DORE
-  purity            Float       @default(0.9999) // 0.9999 for Bullion, 0.916 for 22k, etc.
-  pricingModel      String      @default("FIXED") // FIXED, DYNAMIC
-  marketPrice       Float       @default(0) // LBMA price at creation (for reference or fixed deals)
-  frequency         String      @default("SPOT") // SPOT, WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY
-  totalQuantity     Float?      // Total quantity over the contract duration
-  contractDuration  Int         @default(1) // Duration in years (default 1 for periodic)
-  extensionYears    Int         @default(5) // Rolling extensions in years
-  totalValue        Float       @default(0) // Snapshot of periodic value
-  annualValue       Float       @default(0) // Snapshot of annual value
-  
+  id                   String          @id @default(uuid())
+  externalId           String          @unique
+  company              String
+  commodity            String
+  quantity             Float
+  availableQuantity    Float           @default(0) @map("available_quantity")
+  pricePerKg           Float
+  discount             Float
+  status               String          @default("OPEN")
+  deliveryLocation     String          @default("Dubai")
+  incoterms            String          @default("CIF")
+  type                 String          @default("BULLION")
+  purity               Float           @default(0.9999)
+  pricingModel         String          @default("FIXED")
+  marketPrice          Float           @default(0)
+  cfRisk               String          @default("Low")
+  cfTargetApy          Float           @default(12.5)
+  cfDuration           Int             @default(12)
+  cfMinInvestment      Float           @default(500)
+  cfOrigin             String          @default("")
+  cfTransportMethod    String          @default("Air Freight")
   // Crowdfunding export parameters (defaults for when purchases are exported)
-  cfRisk            String      @default("Low") // Risk level for crowdfunding
-  cfTargetApy       Float       @default(12.5) // Target APY for investors
-  cfDuration        Int         @default(12) // Campaign duration in months
-  cfMinInvestment   Float       @default(500) // Minimum investment amount
-  cfOrigin          String      @default("") // Origin location
-  cfOriginPort      String      @default("") // Origin Port
-  cfTransportMethod String      @default("Air Freight") // Transport method
-  cfIcon            String      @default("gold-bar") // Icon for crowdfunding listing
-  
-  // Seller attributes for SPA
-  sellerAddress         String?
-  sellerTradeLicense    String?
-  sellerRepresentative  String?
-  sellerPassportNumber  String?
-  sellerPassportExpiry  String?
-  sellerCountry         String?
-  sellerTelephone       String?
-  sellerEmail           String?
-  
-  sellerId          String?
-  seller            SellerIdentity? @relation(fields: [sellerId], references: [id])
-  
-  crowdfundingId    String?
-  buyerId           String?
-  buyer             User?       @relation("DealBuyer", fields: [buyerId], references: [id])
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  purchases         Purchase[]
-  pendingExports    PendingExport[]
+  cfType               String          @default("Metals") // Metals, etc.
+  cfIcon               String          @default("gold-bar")
+  crowdfundingId       String?
+  buyerId              String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  cfOriginPort         String          @default("")
+  sellerAddress        String?
+  sellerCountry        String?
+  sellerEmail          String?
+  sellerPassportExpiry String?
+  sellerPassportNumber String?
+  sellerRepresentative String?
+  sellerTelephone      String?
+  sellerTradeLicense   String?
+  sellerId             String?
+  frequency            String          @default("SPOT")
+  contractDuration     Int             @default(1)
+  extensionYears       Int             @default(5)
+  totalQuantity        Float?
+  annualValue          Float           @default(0)
+  totalValue           Float           @default(0)
+  buyer                User?           @relation("DealBuyer", fields: [buyerId], references: [id])
+  seller               SellerIdentity? @relation(fields: [sellerId], references: [id])
+  pendingExports       PendingExport[]
+  purchases            Purchase[]
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String
-  role          String    @default("USER") // USER, ADMIN
-  balance       Float     @default(0)
-  deals         Deal[]    @relation("DealBuyer")
-  purchases     Purchase[]
-  walletFrozen  Boolean   @default(false) // Admin can freeze wallet to prevent transactions
-  transactions  Transaction[]
-  notifications Notification[]
-  
-  // KYC details
-  userType      String    @default("INDIVIDUAL") // INDIVIDUAL, COMPANY
-  kycStatus     String    @default("PENDING") // PENDING, SUBMITTED, APPROVED, REJECTED
-  firstName     String?
-  lastName      String?
-  companyName   String?
+  id                  String         @id @default(cuid())
+  name                String?
+  email               String         @unique
+  password            String
+  role                String         @default("USER")
+  balance             Float          @default(0)
+  walletFrozen        Boolean        @default(false)
+  kycStatus           String         @default("PENDING")
+  firstName           String?
+  lastName            String?
+  address             String?
+  passportNumber      String?
+  nationality         String?
+  kycDocuments        Json?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  passportExpiry      String?
+  phoneNumber         String?
+  companyDocUrl       String?
+  companyName         String?
   companyRegistration String?
-  address       String?
-  phoneNumber   String?
-  passportNumber String?
-  passportExpiry String? // ISO date string or similar
-  nationality   String?
-  idPassportUrl String?   // URL to uploaded ID/Passport
-  companyDocUrl String?   // URL to uploaded Company Doc
-  kycDocuments  Json?     // Store additional URLs or metadata for uploaded docs
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  idPassportUrl       String?
+  userType            String         @default("INDIVIDUAL")
+  deals               Deal[]         @relation("DealBuyer")
+  notifications       Notification[]
+  purchases           Purchase[]
+  transactions        Transaction[]
 }
 
 model Notification {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   message   String
-  type      String   // INFO, SUCCESS, WARNING, ERROR
+  type      String
   link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
@@ -113,40 +106,37 @@ model Notification {
 model Transaction {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // DEPOSIT, WITHDRAWAL, PURCHASE, SALE
+  type      String
   amount    Float
-  status    String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
-  reference String?  // Bank Ref, Deal ID, etc.
+  status    String   @default("COMPLETED")
+  reference String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Purchase {
-  id               String   @id @default(uuid())
+  id               String          @id @default(uuid())
   dealId           String
   buyerId          String
   quantity         Float
   pricePerKg       Float
   totalPrice       Float
   deliveryLocation String
-  status           String   @default("PENDING") // PENDING, CONFIRMED, SHIPPED, DELIVERED
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
-  // Logistics tracking (admin-only)
-  logisticsCompany String?  // Loomis International, Brinks, G4S, Malca-Amit, etc.
-  trackingNumber   String?  // Tracking number from logistics company
-  shippedAt        DateTime? // When package was shipped
-  deliveredAt      DateTime? // When package was delivered
-  logisticsNotes   String?  @db.Text // Admin notes about logistics
-  
-  deal             Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  buyer            User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-  pendingExports   PendingExport[]
+  status           String          @default("PENDING")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  logisticsCompany String?
+  trackingNumber   String?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  logisticsNotes   String?
   agreement        Agreement?
-  
+  pendingExports   PendingExport[]
+  buyer            User            @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  deal             Deal            @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
   @@index([dealId])
   @@index([buyerId])
 }
@@ -154,27 +144,23 @@ model Purchase {
 model Agreement {
   id            String   @id @default(uuid())
   purchaseId    String   @unique
-  purchase      Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   buyerName     String
   sellerName    String
   agreementDate DateTime @default(now())
-  spaData       Json?    // Snapshot of all variables used to generate the SPA
-  terms         String?  @db.Text
-  status        String   @default("DRAFT") // DRAFT, SIGNED
+  spaData       Json?
+  terms         String?
+  status        String   @default("DRAFT")
   pdfUrl        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  purchase      Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 }
 
 model PendingExport {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   purchaseId        String
   dealId            String
-  purchase          Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  deal              Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  
-  // Editable crowdfunding parameters
-  cfType            String   @default("Metals")
+  cfType            String    @default("Metals")
   cfName            String
   cfIcon            String
   cfRisk            String
@@ -182,44 +168,45 @@ model PendingExport {
   cfDuration        Int
   cfMinInvestment   Float
   cfAmountRequired  Float
-  cfDescription     String   @db.Text
+  cfDescription     String
   cfOrigin          String
   cfDestination     String
   cfTransportMethod String
   cfMetalForm       String
   cfPurityPercent   Float
-  
-  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED, EXPORTED
-  crowdfundingId    String?  // Set after successful export
-  reviewedBy        String?  // Admin who reviewed
+  cfFrequency       String   @default("SPOT") // SPOT, WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY
+  status            String    @default("PENDING")
+  crowdfundingId    String?
+  reviewedBy        String?
   reviewedAt        DateTime?
-  rejectionReason   String?  @db.Text // Reason for rejection
+  rejectionReason   String?
   exportedAt        DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deal              Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  purchase          Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
   @@index([purchaseId])
   @@index([dealId])
   @@index([status])
 }
 
-
 model SellerIdentity {
-  id                String   @id @default(cuid())
-  alias             String?  // Internal name
-  companyName       String
-  logo              String?  // URL to logo image
-  originCountry     String?
-  originPort        String?
-  address           String?
-  tradeLicense      String?
-  representative    String?
-  passportNumber    String?
-  passportExpiry    String?
-  country           String?
-  telephone         String?
-  email             String?
-  deals             Deal[]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id             String   @id @default(cuid())
+  alias          String?
+  companyName    String
+  originCountry  String?
+  originPort     String?
+  address        String?
+  tradeLicense   String?
+  representative String?
+  passportNumber String?
+  passportExpiry String?
+  country        String?
+  telephone      String?
+  email          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  logo           String?
+  deals          Deal[]
 }
